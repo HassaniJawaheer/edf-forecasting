@@ -1,3 +1,5 @@
+# Initialisation de Kedro avec uv
+
 ```bash
 # Vérifier si uv est installé
 uv --version
@@ -37,9 +39,7 @@ uv run kedro --version
 uv run python -c "import mlflow, numpy; print(mlflow.__version__, numpy.__version__)"
 ```
 
----
-
-# Workflow quotidien
+## Workflow quotidien
 
 ```bash
 # Ajouter une librairie
@@ -51,4 +51,37 @@ uv remove seaborn
 # Re-synchroniser sur un poste neuf
 uv venv .venv
 uv sync
+```
+
+
+# Initialisation projet → push GitHub
+
+```bash
+# 1. Initialiser un dépôt Git
+git init
+# crée un dépôt local vide, première branche = master par défaut
+
+# 2. Renommer master → main
+git branch -M main
+# -M force le renommage, même si la branche existe déjà
+
+# 3. Vérifier l’état du dépôt
+git status
+# montre quels fichiers sont suivis, modifiés, non suivis
+
+# 4. Ajouter les fichiers à suivre (staging area)
+git add .
+
+# 5. Enregistrer un commit
+git commit -m "Init projet EDF Forecasting"
+# -m permet d’ajouter un message directement
+# si tu lances "git commit" sans git add avant → rien ne sera commité
+
+# 6. Ajouter le lien vers le repo GitHub
+git remote add origin git@github.com:HassaniJawaheer/edf-forecasting.git
+# "origin" = nom par défaut du dépôt distant
+
+# 7. Pousser la branche main vers GitHub
+git push -u origin main
+# -u crée un lien entre ta branche locale et distante
 ```
