@@ -53,6 +53,50 @@ uv venv .venv
 uv sync
 ```
 
+## Intégration MLflow
+
+```bash
+# Initialiser la configuration MLflow (création conf/local/mlflow.yml)
+uv run kedro mlflow init
+# → ajoute les fichiers mlflow.yml et credentials.yml
+
+# Vérifier les plugins actifs
+uv run kedro info
+
+# Lancer le pipeline (exemple hello)
+uv run kedro run
+
+# Lancer l’interface web de MLflow
+uv run kedro mlflow ui
+
+# Corriger la version de MLflow pour compatibilité Python 3.12
+uv add -U mlflow==2.12.2
+uv sync
+
+# Créer un pipeline de test MLflow
+uv run kedro pipeline create hello_mlflow
+```
+
+## Gestion des versions MLflow
+
+```bash
+# Forcer la mise à jour MLflow → compatibilité Python 3.12
+uv add -U mlflow==2.12.2
+
+# Re-synchroniser l’env
+uv sync
+```
+
+La config suivante a permis de valider le run :
+
+```yaml
+server:
+  mlflow_tracking_uri: mlruns
+
+tracking:
+  experiment:
+    name: edf_forecasting
+```
 
 # Initialisation projet → push GitHub
 
