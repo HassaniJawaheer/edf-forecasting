@@ -13,7 +13,6 @@ scraping:
 
 prestructuring:
   raw_dir: data/01_raw/eco2mix
-  output_dir: data/02_intermediate/eco2mix
   start_year: 2015
   end_year: 2022
 
@@ -24,3 +23,4 @@ cleaning:
   tempo_column_name: Type de jour TEMPO
   new_tempo_column_name: tempo
   consumption_col: Consommation
+

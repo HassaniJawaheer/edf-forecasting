@@ -2,9 +2,9 @@
 This is a boilerplate pipeline 'prepare_data'
 generated using Kedro 1.0.0
 """
-
 from kedro.pipeline import Pipeline, node, pipeline
 from .nodes import scrape_data, prestructure_data, clean_data
+
 
 def create_pipeline(**kwargs) -> Pipeline:
     return pipeline([
@@ -17,18 +17,14 @@ def create_pipeline(**kwargs) -> Pipeline:
         node(
             func=prestructure_data,
             inputs=["scraping_status", "params:prestructuring"],
-            outputs="prestructuring_status",
+            outputs=["consumption_data", "tempo_calendar"],
             name="prestructure_data",
         ),
         node(
             func=clean_data,
-            inputs=[
-                "prestructuring_status",
-                "consumption_data",
-                "tempo_calendar",
-                "params:cleaning",
-            ],
+            inputs=["consumption_data", "tempo_calendar", "params:cleaning"],
             outputs=["cleaned_consumption_data", "cleaned_tempo_calendar"],
             name="clean_data",
         ),
     ])
+

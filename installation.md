@@ -78,6 +78,11 @@ uv sync
 uv run kedro pipeline create hello_mlflow
 uv run kedro pipeline create prepare_data_30min
 ```
+# Lancer des pipes
+uv run kedro run --pipeline=prepare_data --from-nodes="scrape_data" --to-nodes="prestructure_data"
+uv run kedro run --pipeline=prepare_data
+uv run kedro run --pipeline=prepare_data --from-nodes="scrape_data"
+
 
 ## Gestion des versions MLflow
 

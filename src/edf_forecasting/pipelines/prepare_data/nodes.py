@@ -29,27 +29,24 @@ def scrape_data(params):
 
 def prestructure_data(_, params):
     raw_dir = Path(params["raw_dir"])
-    out_dir = Path(params["output_dir"])
-    out_dir.mkdir(parents=True, exist_ok=True)
 
     mlflow.log_params({
         "pre.raw_dir": str(raw_dir),
-        "pre.out_dir": str(out_dir),
+
         "pre.years": f'{params["start_year"]}-{params["end_year"]}',
     })
 
-    preparator = Eco2MixDataPreparator(str(raw_dir), str(out_dir))
-    preparator.prepare_consumption_data(params["start_year"], params["end_year"])
-    preparator.prepare_tempo_calendar(params["start_year"], params["end_year"])
+    preparator = Eco2MixDataPreparator(str(raw_dir))
+    df_consumption = preparator.prepare_consumption_data(params["start_year"], params["end_year"])
+    df_tempo = preparator.prepare_tempo_calendar(params["start_year"], params["end_year"])
 
-    # (option) petit check/compteur de fichiers produits
-    n_files = len(list(out_dir.rglob("*.csv")))
-    mlflow.log_metric("pre.files_written", n_files)
+    mlflow.log_metric("pre.rows_consumption", len(df_consumption))
+    mlflow.log_metric("pre.rows_tempo", len(df_tempo))
 
-    return {"prestructuring_status": "done"}
+    return df_consumption, df_tempo
 
 
-def clean_data(_, df_definitive, df_tempo, params):
+def clean_data(df_definitive, df_tempo, params):
     mlflow.log_params({
         "clean.columns_to_keep": ",".join(params["columns_to_keep"]),
         "clean.tempo_col": params["tempo_column_name"],
@@ -67,7 +64,6 @@ def clean_data(_, df_definitive, df_tempo, params):
     df_def_cleaned = cleaner.clean_definitive(df_definitive)
     df_tempo_cleaned = cleaner.clean_tempo(df_tempo)
 
-    # petits compteurs utiles dans l’UI
     mlflow.log_metric("clean.rows_def", int(len(df_def_cleaned)))
     mlflow.log_metric("clean.rows_tempo", int(len(df_tempo_cleaned)))
 
