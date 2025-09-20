@@ -30,3 +30,51 @@ cleaned_consumption_data:
 cleaned_tempo_calendar:
   type: pandas.CSVDataset
   filepath: data/03_primary/eco2mix/tempo/cleaned_tempo_calendar.csv
+
+tempo_consumption_data:
+  type: pandas.CSVDataset
+  filepath: data/03_primary/eco2mix/aggregate_minute/tempo_consumption_data.csv
+  save_args:
+    index: False
+
+tempo_consumption_enriched_data:
+  type: pandas.CSVDataset
+  filepath: data/03_primary/eco2mix/aggregate_minute/tempo_consumption_enriched_data.csv
+  save_args:
+    index: False
+
+checked_consumption_data:
+  type: pandas.CSVDataset
+  filepath: data/03_primary/eco2mix/definitive/30min/checked/checked_consumption_data.csv
+  load_args:
+    index_col: 0
+    parse_dates: true
+  save_args:
+    index: true
+
+train_checked_consumption_data:
+  type: pandas.CSVDataset
+  filepath: data/03_primary/eco2mix/definitive/30min/checked/split/train_checked_consumption_data.csv
+  load_args:
+    index_col: 0
+    parse_dates: true
+  save_args:
+    index: true
+
+cal_checked_consumption_data:
+  type: pandas.CSVDataset
+  filepath: data/03_primary/eco2mix/definitive/30min/checked/split/cal_checked_consumption_data.csv
+  load_args:
+    index_col: 0
+    parse_dates: true
+  save_args:
+    index: true
+
+test_checked_consumption_data:
+  type: pandas.CSVDataset
+  filepath: data/03_primary/eco2mix/definitive/30min/checked/split/test_checked_consumption_data.csv
+  load_args:
+    index_col: 0
+    parse_dates: true
+  save_args:
+    index: true

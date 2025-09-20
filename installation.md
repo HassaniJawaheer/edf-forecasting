@@ -68,6 +68,7 @@ uv run kedro run
 
 # Lancer l’interface web de MLflow
 uv run kedro mlflow ui
+uv run mlflow ui --backend-store-uri mlruns
 
 # Corriger la version de MLflow pour compatibilité Python 3.12
 uv add -U mlflow==2.12.2
@@ -75,6 +76,7 @@ uv sync
 
 # Créer un pipeline de test MLflow
 uv run kedro pipeline create hello_mlflow
+uv run kedro pipeline create prepare_data_30min
 ```
 
 ## Gestion des versions MLflow
