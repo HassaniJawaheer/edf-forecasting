@@ -3,3 +3,24 @@
 #
 # Documentation for this file format can be found in "Parameters"
 # Link: https://docs.kedro.org/en/1.0.0/configuration/parameters.html
+
+scraping:
+  output_dir: data/01_raw/eco2mix
+  start_year_definitive: 2015
+  end_year_definitive: 2022
+  start_year_tempo: 2014
+  end_year_tempo: 2023
+
+prestructuring:
+  raw_dir: data/01_raw/eco2mix
+  output_dir: data/02_intermediate/eco2mix
+  start_year: 2015
+  end_year: 2022
+
+cleaning:
+  columns_to_keep:
+    - Datetime
+    - Consommation
+  tempo_column_name: Type de jour TEMPO
+  new_tempo_column_name: tempo
+  consumption_col: Consommation

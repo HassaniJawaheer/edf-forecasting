@@ -6,3 +6,27 @@
 hello_output:
   type: json.JSONDataset
   filepath: data/08_reporting/hello_output.json
+
+scraping_status:
+  type: json.JSONDataset
+  filepath: data/00_reporting/scraping_status.json
+
+prestructuring_status:
+  type: json.JSONDataset
+  filepath: data/00_reporting/prestructuring_status.json
+
+consumption_data:
+  type: pandas.CSVDataset
+  filepath: data/02_intermediate/eco2mix/definitive/consumption_data.csv
+
+tempo_calendar:
+  type: pandas.CSVDataset
+  filepath: data/02_intermediate/eco2mix/tempo/tempo_calendar.csv
+
+cleaned_consumption_data:
+  type: pandas.CSVDataset
+  filepath: data/03_primary/eco2mix/definitive/cleaned_consumption_data.csv
+
+cleaned_tempo_calendar:
+  type: pandas.CSVDataset
+  filepath: data/03_primary/eco2mix/tempo/cleaned_tempo_calendar.csv
