@@ -4,21 +4,20 @@
 # Documentation for this file format can be found in "Parameters"
 # Link: https://docs.kedro.org/en/1.0.0/configuration/parameters.html
 
-prepare_data_30min:
+add_tempo:
+  mode: "aggregate_minute"
 
-  add_tempo:
-    mode: "aggregate_minute"
+add_features:
+  include:
+    - "weekday"
+    - "month"
+    - "season"
 
-  add_features:
-    include:
-      - hour
-      - weekday
-      - month
+check_frequency:
+  datetime_col: "Datetime"
+  freq: "30T"
 
-  check_frequency:
-    datetime_col: "Datetime"
-    freq: "30T"
+split:
+  cal_year: 2021
+  test_year: 2022
 
-  split:
-    cal_year: 2021
-    test_year: 2022

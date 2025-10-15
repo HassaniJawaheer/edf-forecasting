@@ -112,4 +112,3 @@ test_checked_consumption_data:
     low_memory: false
   save_args:
     index: true
-

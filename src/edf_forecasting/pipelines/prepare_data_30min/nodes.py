@@ -1,29 +1,34 @@
-"""
-This is a boilerplate pipeline 'prepare_data_30min'
-generated using Kedro 1.0.0
-"""
 import mlflow
+import pandas as pd
 from edf_forecasting.components.eco2mix_add_tempo import Eco2MixAddTempo
 from edf_forecasting.components.eco2mix_add_features import Eco2mixFeaturesMinute
-import pandas as pd
 
 
 def add_tempo_min(df_data, df_tempo, params):
+    """Merge minute-level data with tempo calendar."""
     mlflow.log_param("add_tempo.mode", params["mode"])
     adder = Eco2MixAddTempo(mode=params["mode"])
-    return adder.add_tempo(df_data, df_tempo)
+    df = adder.add_tempo(df_data, df_tempo)
+
+    mlflow.log_metric("add_tempo.rows", len(df))
+    mlflow.log_metric("add_tempo.cols", df.shape[1])
+    return df
 
 
 def add_features_min(df, params):
+    """Add engineered minute-level features."""
     include = params.get("include", [])
     mlflow.log_param("features.include", ",".join(include))
+
     engineer = Eco2mixFeaturesMinute(df)
     df_feat = engineer.run(include=include)
+
     mlflow.log_metric("features.n_cols", df_feat.shape[1])
     return df_feat
 
 
 def check_frequency(df_data, params):
+    """Check if inferred frequency matches expected frequency."""
     dt_col = params["datetime_col"]
     df = df_data.copy()
     df[dt_col] = pd.to_datetime(df[dt_col])
@@ -31,15 +36,16 @@ def check_frequency(df_data, params):
 
     inferred_freq = pd.infer_freq(df.index)
     mlflow.log_param("expected_freq", params["freq"])
-    mlflow.log_param("inferred_freq", inferred_freq)
+    mlflow.log_param("inferred_freq", inferred_freq or "unknown")
 
     if inferred_freq != params["freq"]:
-        raise ValueError(f"Inconsistent time step: expected {params['freq']}, got {inferred_freq}")
-    
+        raise ValueError(f"Inconsistent time step: expected {params['freq']}, got {inferred_freq or 'unknown'}")
+
     return df
 
 
 def split_train_cal_test(df, params):
+    """Split dataset into train/cal/test sets by year."""
     df_train = df[df.index.year < params["cal_year"]]
     df_cal = df[df.index.year == params["cal_year"]]
     df_test = df[df.index.year == params["test_year"]]
