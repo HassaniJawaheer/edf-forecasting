@@ -1,0 +1,15 @@
+# This is a boilerplate parameters config generated for pipeline 'tune_xgboost_30min'
+# using Kedro 1.0.0.
+#
+# Documentation for this file format can be found in "Parameters"
+# Link: https://docs.kedro.org/en/1.0.0/configuration/parameters.html
+
+create_windows:
+  window_size: 48
+  target_col: "Consommation"
+
+tune:
+  n_trials: 500
+  timeout: null
+  seed: 42
+  cv: 5

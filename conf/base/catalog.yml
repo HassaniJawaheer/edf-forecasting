@@ -112,3 +112,14 @@ test_checked_consumption_data:
     low_memory: false
   save_args:
     index: true
+
+xgboost_optuna_best_params_30min:
+  type: yaml.YAMLDataset
+  filepath: data/07_model_output/eco2mix/xgboost/30min/params/best_params.yml
+  versioned: true
+
+X_train_30min:
+  type: MemoryDataset
+
+y_train_30min:
+  type: MemoryDataset

@@ -9,7 +9,7 @@ from sklearn.model_selection import cross_val_score
 logging.basicConfig(level=logging.INFO)
 
 class XGBoostTuner:
-    def __init__(self, n_trials=20, cv=3, timeout=None, seed=42, study_dir="optuna_studies"):
+    def __init__(self, n_trials=20, cv=3, timeout=None, seed=42):
         self.n_trials = n_trials
         self.cv = cv
         self.timeout = timeout
@@ -32,7 +32,7 @@ class XGBoostTuner:
 
         def objective(trial):
             params = {
-                "n_estimators": trial.suggest_int("n_estimators", 50, 80),
+                "n_estimators": trial.suggest_int("n_estimators", 100, 1000),
                 "max_depth": trial.suggest_int("max_depth", 3, 10),
                 "learning_rate": trial.suggest_float("learning_rate", 0.01, 0.3, log=True),
                 "subsample": trial.suggest_float("subsample", 0.5, 1.0),
@@ -42,7 +42,7 @@ class XGBoostTuner:
                 "reg_alpha": trial.suggest_float("reg_alpha", 1e-8, 10.0, log=True),
                 "reg_lambda": trial.suggest_float("reg_lambda", 1e-8, 10.0, log=True),
                 "min_child_weight": trial.suggest_int("min_child_weight", 1, 20),
-                "booster": trial.suggest_categorical("booster", ["gbtree", "dart"]),
+                "booster": trial.suggest_categorical("booster", ["gbtree"]),
                 "n_jobs": -1,
                 "random_state": self.seed
             }
