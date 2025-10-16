@@ -1,0 +1,20 @@
+# This is a boilerplate parameters config generated for pipeline 'train_xgboost_30min'
+# using Kedro 1.0.0.
+#
+# Documentation for this file format can be found in "Parameters"
+# Link: https://docs.kedro.org/en/1.0.0/configuration/parameters.html
+
+train:
+  windows_size: 48
+  target_col: Consommation
+
+calibration:
+  error_type: raw
+  alpha: 0.05
+  windows_size: 48
+  target_col: Consommation
+
+evaluate:
+  quantile: 0.95
+  windows_size: 48
+  target_col: Consommation

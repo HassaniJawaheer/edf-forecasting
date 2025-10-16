@@ -5,13 +5,12 @@
 
 hello_output:
   type: json.JSONDataset
-  filepath: data/08_reporting/hello_output.json
+  filepath: data/00_reporting/hello_output.json
 
 scraping_status:
   type: json.JSONDataset
   filepath: data/00_reporting/scraping_status.json
 
-# Intermediate datasets (versioned folders)
 consumption_data:
   type: pandas.CSVDataset
   filepath: data/02_intermediate/eco2mix/definitive/consumption_data.csv
@@ -30,7 +29,6 @@ tempo_calendar:
   save_args:
     index: false
 
-# Cleaned datasets
 cleaned_consumption_data:
   type: pandas.CSVDataset
   filepath: data/03_primary/eco2mix/definitive/cleaned_consumption_data.csv
@@ -49,7 +47,6 @@ cleaned_tempo_calendar:
   save_args:
     index: false
 
-# Aggregates
 tempo_consumption_data:
   type: pandas.CSVDataset
   filepath: data/03_primary/eco2mix/aggregate_minute/tempo_consumption_data.csv
@@ -68,7 +65,6 @@ tempo_consumption_enriched_data:
   save_args:
     index: false
 
-# Checked + splits
 checked_consumption_data:
   type: pandas.CSVDataset
   filepath: data/03_primary/eco2mix/definitive/30min/checked/checked_consumption_data.csv
@@ -123,3 +119,33 @@ X_train_30min:
 
 y_train_30min:
   type: MemoryDataset
+
+trained_model_xgboost_30min:
+  type: pickle.PickleDataset
+  filepath: data/06_models/eco2mix/xgboost/30min/model.joblib
+  versioned: true
+
+train_scores_xgboost_30min:
+  type: yaml.YAMLDataset
+  filepath: data/07_model_output/eco2mix/xgboost/30min/scores/train_scores.yml
+  versioned: true
+
+metadata_xgboost_30min:
+  type: yaml.YAMLDataset
+  filepath: data/07_model_output/eco2mix/xgboost/30min/metadata/training_metadata.yml
+  versioned: true
+
+q_inf_xgboost_30min:
+  type: yaml.YAMLDataset
+  filepath: data/07_model_output/eco2mix/xgboost/30min/calibration/q_inf.yml
+  versioned: true
+
+q_sup_xgboost_30min:
+  type: yaml.YAMLDataset
+  filepath: data/07_model_output/eco2mix/xgboost/30min/calibration/q_sup.yml
+  versioned: true
+
+test_scores_xgboost_30min:
+  type: yaml.YAMLDataset
+  filepath: data/07_model_output/eco2mix/xgboost/30min/evaluation/test_scores.yml
+  versioned: true
