@@ -4,7 +4,7 @@ generated using Kedro 1.0.0
 """
 import numpy as np
 import mlflow
-from edf_forecasting.components.eco2mix_tune_xgboost_30min import XGBoostTuner
+from edf_forecasting.components.eco2mix_tune_xgboost import XGBoostTuner
 
 
 def create_windows(df_data, params):

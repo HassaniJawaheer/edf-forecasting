@@ -3,6 +3,7 @@ import yaml
 import datetime
 import optuna
 import logging
+import mlflow
 from xgboost import XGBRegressor
 from sklearn.model_selection import cross_val_score
 
@@ -22,6 +23,9 @@ class XGBoostTuner:
 
         study_path = os.path.join(base_dir, "optuna_study.db")
         params_path = os.path.join(base_dir, "best_params.yml")
+
+        mlflow.set_tracking_uri("mlruns")
+        mlflow.set_experiment("xgboost_tuning_time_series")
 
         study = optuna.create_study(
             direction="minimize",
@@ -49,25 +53,35 @@ class XGBoostTuner:
 
             model = XGBRegressor(**params)
             scores = cross_val_score(model, X, y, cv=self.cv, scoring="neg_root_mean_squared_error", n_jobs=-1)
-            return -scores.mean()
+            rmse = -scores.mean()
 
-        study.optimize(objective, n_trials=self.n_trials, timeout=self.timeout, show_progress_bar=True)
+            mlflow.log_params(params)
+            mlflow.log_metric("rmse", rmse)
 
-        best_params = study.best_params
-        best_score = study.best_value
+            return rmse
 
-        summary = {
-            "study_path": study_path,
-            "best_score_rmse": best_score,
-            "best_params": best_params,
-            "n_trials": self.n_trials,
-            "cv": self.cv,
-            "seed": self.seed,
-            "timestamp": timestamp
-        }
+        with mlflow.start_run():
+            study.optimize(objective, n_trials=self.n_trials, timeout=self.timeout, show_progress_bar=True)
+            best_params = study.best_params
+            best_score = study.best_value
 
-        with open(params_path, "w") as f:
-            yaml.dump(summary, f)
+            mlflow.log_params(best_params)
+            mlflow.log_metric("best_rmse", best_score)
+            mlflow.log_artifact(study_path)
+            mlflow.log_artifact(params_path)
+
+            summary = {
+                "study_path": study_path,
+                "best_score_rmse": best_score,
+                "best_params": best_params,
+                "n_trials": self.n_trials,
+                "cv": self.cv,
+                "seed": self.seed,
+                "timestamp": timestamp
+            }
+
+            with open(params_path, "w") as f:
+                yaml.dump(summary, f)
 
         logging.info(f"Tuning complete. Params saved to : {params_path}")
         return best_params, study

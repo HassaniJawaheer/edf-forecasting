@@ -20,7 +20,6 @@ add_features:
     - weekofyear
     - quarter
     - is_weekend
-    - temperature
 
 check_frequency:
   datetime_col: "Datetime"

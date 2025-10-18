@@ -6,9 +6,9 @@ import mlflow
 import json
 import tempfile
 import os
-from edf_forecasting.components.eco2mix_evaluate_xgboost_30min import XGBEvaluate30min
-from edf_forecasting.components.eco2mix_calibrate_xgboost_30min import XGBCalibrator30min
-from edf_forecasting.components.eco2mix_train_xgboost_30min import Eco2mixTrainGBoost30min
+from edf_forecasting.components.eco2mix_evaluate_xgboost_time_series import XGBEvaluate30min
+from edf_forecasting.components.eco2mix_calibrate_xgboost_time_series import XGBCalibrator30min
+from edf_forecasting.components.eco2mix_train_xgboost_time_series import Eco2mixTrainGBoost30min
 
 
 def train(df_train, training_params, params):
