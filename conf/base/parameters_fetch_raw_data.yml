@@ -1,4 +1,4 @@
-# This is a boilerplate parameters config generated for pipeline 'prepare_data'
+# This is a boilerplate parameters config generated for pipeline 'fetch_raw_data'
 # using Kedro 1.0.0.
 #
 # Documentation for this file format can be found in "Parameters"
@@ -20,6 +20,22 @@ cleaning:
   columns_to_keep:
     - Datetime
     - Consommation
+    - Fioul
+    - Charbon
+    - Gaz
+    - Nucléaire
+    - Eolien
+    - Solaire
+    - Hydraulique
+    - Pompage
+    - Bioénergies
+    - Ech. physiques
+    - Ech. comm. Angleterre
+    - Ech. comm. Espagne
+    - Ech. comm. Italie
+    - Ech. comm. Suisse
+    - Ech. comm. Allemagne-Belgique
+    - Taux de Co2
   tempo_column_name: Type de jour TEMPO
   new_tempo_column_name: tempo
   consumption_col: Consommation

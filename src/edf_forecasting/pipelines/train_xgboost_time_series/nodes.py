@@ -1,5 +1,5 @@
 """
-This is a boilerplate pipeline 'train_xgboost_30min'
+This is a boilerplate pipeline 'train_xgboost_time_series'
 generated using Kedro 1.0.0
 """
 import mlflow

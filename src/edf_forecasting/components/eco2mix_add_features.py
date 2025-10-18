@@ -108,99 +108,65 @@ class Eco2mixFeaturesDay:
         return self.df
 
 class Eco2mixFeaturesMinute:
-    """Adds selected external features to 30-min Eco2mix data."""
+    """Add temporal and external features to 30-min Eco2mix data."""
 
     def __init__(self, df):
         self.df = df.copy()
         self.df["Datetime"] = pd.to_datetime(self.df["Datetime"])
 
+    def add_hour(self):
+        self.df["hour"] = self.df["Datetime"].dt.hour
+
+    def add_dayofweek(self):
+        self.df["dayofweek"] = self.df["Datetime"].dt.dayofweek
+
+    def add_dayofyear(self):
+        self.df["dayofyear"] = self.df["Datetime"].dt.dayofyear
+
+    def add_month(self):
+        self.df["month"] = self.df["Datetime"].dt.month
+
+    def add_year(self):
+        self.df["year"] = self.df["Datetime"].dt.year
+
+    def add_weekofyear(self):
+        self.df["weekofyear"] = self.df["Datetime"].dt.isocalendar().week.astype(int)
+
+    def add_quarter(self):
+        self.df["quarter"] = self.df["Datetime"].dt.quarter
+
+    def add_is_weekend(self):
+        self.df["is_weekend"] = self.df["Datetime"].dt.dayofweek.isin([5, 6]).astype(int)
+
     def add_temperature(self, latitude=48.85, longitude=2.35):
+        """Add forecast temperature using Open-Meteo API."""
         self.df["Hour"] = self.df["Datetime"].dt.floor("h")
         start_date = self.df["Hour"].min().strftime("%Y-%m-%d")
         end_date = self.df["Hour"].max().strftime("%Y-%m-%d")
 
-        url = "https://archive-api.open-meteo.com/v1/archive"
+        url = "https://api.open-meteo.com/v1/forecast"
         params = {
             "latitude": latitude,
             "longitude": longitude,
             "start_date": start_date,
             "end_date": end_date,
-            "hourly": "temperature",
+            "hourly": "temperature_2m",
             "timezone": "Europe/Paris"
         }
 
         try:
-            response = requests.get(url, params=params)
-            response.raise_for_status()
-            data = response.json()
-            temp_df = pd.DataFrame(data["hourly"])
-            temp_df["Hour"] = pd.to_datetime(temp_df["time"])
-            temp_df.drop(columns=["time"], inplace=True)
+            r = requests.get(url, params=params)
+            r.raise_for_status()
+            data = r.json()
+            temp_df = pd.DataFrame({
+                "Hour": pd.to_datetime(data["hourly"]["time"]),
+                "temperature_2m": data["hourly"]["temperature_2m"]
+            })
             self.df = self.df.merge(temp_df, on="Hour", how="left")
             self.df.drop(columns=["Hour"], inplace=True)
-
-            logging.info("Temperature features added.")
+            logging.info("Forecast temperature added.")
         except requests.RequestException as e:
-            logging.error(f"[API Error - Temperature] {e}")
-
-    def add_sunshine(self, latitude=48.85, longitude=2.35):
-        self.df["Date"] = self.df["Datetime"].dt.date
-        start_date = min(self.df["Date"]).strftime("%Y-%m-%d")
-        end_date = max(self.df["Date"]).strftime("%Y-%m-%d")
-
-        url = "https://archive-api.open-meteo.com/v1/archive"
-        params = {
-            "latitude": latitude,
-            "longitude": longitude,
-            "start_date": start_date,
-            "end_date": end_date,
-            "daily": "sunshine_duration",
-            "timezone": "Europe/Paris"
-        }
-
-        try:
-            response = requests.get(url, params=params)
-            response.raise_for_status()
-            data = response.json()
-            sun_df = pd.DataFrame(data["daily"])
-            sun_df["Date"] = pd.to_datetime(sun_df["time"]).dt.date
-            sun_df.drop(columns=["time"], inplace=True)
-            self.df = self.df.merge(sun_df, on="Date", how="left")
-            self.df.drop(columns=["Date"], inplace=True)
-            logging.info("Sunshine features added.")
-        except requests.RequestException as e:
-            logging.error(f"[API Error - Sunshine] {e}")
-
-    def add_weekday(self):
-        self.df["Date"] = self.df["Datetime"].dt.date
-        jours_fr = ["lundi", "mardi", "mercredi", "jeudi", "vendredi", "samedi", "dimanche"]
-        self.df["weekday"] = pd.to_datetime(self.df["Date"]).dt.dayofweek.apply(lambda x: jours_fr[x])
-        self.df.drop(columns=["Date"], inplace=True)
-        logging.info("Weekday column added.")
-
-    def add_month(self):
-        self.df["Date"] = self.df["Datetime"].dt.date
-        mois_fr = [
-            "janvier", "février", "mars", "avril", "mai", "juin",
-            "juillet", "août", "septembre", "octobre", "novembre", "décembre"
-        ]
-        self.df["month"] = pd.to_datetime(self.df["Date"]).dt.month.apply(lambda x: mois_fr[x - 1])
-        self.df.drop(columns=["Date"], inplace=True)
-        logging.info("Month column added.")
-
-    def add_season(self):
-        self.df["Date"] = self.df["Datetime"].dt.date
-
-        def get_season(month):
-            return (
-                "hiver" if month in [12, 1, 2] else
-                "printemps" if month in [3, 4, 5] else
-                "été" if month in [6, 7, 8] else
-                "automne"
-            )
-        self.df["season"] = pd.to_datetime(self.df["Date"]).dt.month.apply(get_season)
-        self.df.drop(columns=["Date"], inplace=True)
-        logging.info("Season column added.")
+            logging.error(f"Temperature API error: {e}")
 
     def add_vacation(self):
         self.df["Date"] = self.df["Datetime"].dt.date
@@ -222,20 +188,29 @@ class Eco2mixFeaturesMinute:
 
         self.df["is_vacation"] = self.df["Date"].apply(lambda d: int(d in public_holidays or d in vacations))
         self.df.drop(columns=["Date"], inplace=True)
-        logging.info("Vacation flag added.")
 
     def run(self, include=None):
         include = include or []
-        if "temperature" in include:
-            self.add_temperature()
-        if "sunshine" in include:
-            self.add_sunshine()
-        if "weekday" in include:
-            self.add_weekday()
+
+        if "hour" in include:
+            self.add_hour()
+        if "dayofweek" in include:
+            self.add_dayofweek()
+        if "dayofyear" in include:
+            self.add_dayofyear()
         if "month" in include:
             self.add_month()
-        if "season" in include:
-            self.add_season()
+        if "year" in include:
+            self.add_year()
+        if "weekofyear" in include:
+            self.add_weekofyear()
+        if "quarter" in include:
+            self.add_quarter()
+        if "is_weekend" in include:
+            self.add_is_weekend()
+        if "temperature" in include:
+            self.add_temperature()
         if "vacation" in include:
             self.add_vacation()
+
         return self.df

@@ -1,3 +1,8 @@
+"""
+This is a boilerplate pipeline 'process_data'
+generated using Kedro 1.0.0
+"""
+
 import mlflow
 import pandas as pd
 from edf_forecasting.components.eco2mix_add_tempo import Eco2MixAddTempo
