@@ -1,5 +1,5 @@
 """
-This is a boilerplate test file for pipeline 'tune_xgboost_30min'
+This is a boilerplate test file for pipeline 'fetch_raw_data'
 generated using Kedro 1.0.0.
 Please add your pipeline tests here.
 
