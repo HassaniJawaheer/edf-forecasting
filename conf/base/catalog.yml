@@ -109,43 +109,43 @@ test_checked_consumption_data:
   save_args:
     index: true
 
-xgboost_optuna_best_params_30min:
+xgboost_time_series_optuna_best_params:
   type: yaml.YAMLDataset
-  filepath: data/07_model_output/eco2mix/xgboost/30min/params/best_params.yml
+  filepath: data/07_model_output/eco2mix/time_series/30min/xgboost/tuning/optuna/params/best_params.yml
   versioned: true
 
-X_train_30min:
+X_train:
   type: MemoryDataset
 
-y_train_30min:
+y_train:
   type: MemoryDataset
 
-trained_model_xgboost_30min:
+trained_model_time_series_xgboost_30min:
   type: pickle.PickleDataset
-  filepath: data/06_models/eco2mix/xgboost/30min/model.joblib
+  filepath: data/06_models/eco2mix/time_series/30min/xgboost/model.joblib
   versioned: true
 
-train_scores_xgboost_30min:
+train_scores_time_series_xgboost_30min:
   type: yaml.YAMLDataset
-  filepath: data/07_model_output/eco2mix/xgboost/30min/scores/train_scores.yml
+  filepath: data/07_model_output/eco2mix/time_series/30min/xgboost/scores/train_scores.yml
   versioned: true
 
-metadata_xgboost_30min:
+metadata_time_series_xgboost_30min:
   type: yaml.YAMLDataset
-  filepath: data/07_model_output/eco2mix/xgboost/30min/metadata/training_metadata.yml
+  filepath: data/07_model_output/eco2mix/time_series/30min/xgboost/metadata/training_metadata.yml
   versioned: true
 
-q_inf_xgboost_30min:
+q_inf_time_series_xgboost_30min:
   type: yaml.YAMLDataset
-  filepath: data/07_model_output/eco2mix/xgboost/30min/calibration/q_inf.yml
+  filepath: data/07_model_output/eco2mix/time_series/30min/xgboost/calibration/q_inf.yml
   versioned: true
 
-q_sup_xgboost_30min:
+q_sup_time_series_xgboost_30min:
   type: yaml.YAMLDataset
-  filepath: data/07_model_output/eco2mix/xgboost/30min/calibration/q_sup.yml
+  filepath: data/07_model_output/eco2mix/time_series/30min/xgboost/calibration/q_sup.yml
   versioned: true
 
-test_scores_xgboost_30min:
+test_scores_time_series_xgboost_30min:
   type: yaml.YAMLDataset
-  filepath: data/07_model_output/eco2mix/xgboost/30min/evaluation/test_scores.yml
+  filepath: data/07_model_output/eco2mix/time_series/30min/xgboost/evaluation/test_scores.yml
   versioned: true

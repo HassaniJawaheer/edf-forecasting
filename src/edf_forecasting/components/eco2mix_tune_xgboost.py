@@ -18,14 +18,20 @@ class XGBoostTuner:
 
     def run(self, X, y):
         timestamp = datetime.datetime.now().strftime("tuning_%Y-%m-%d_%H-%M")
-        base_dir = f"data/07_model_output/eco2mix/xgboost/30min/optuna_study/{timestamp}"
+        base_dir = f"data/07_model_output/eco2mix/time_series/30min/xgboost/tuning/optuna/study/{timestamp}"
         os.makedirs(base_dir, exist_ok=True)
 
         study_path = os.path.join(base_dir, "optuna_study.db")
-        params_path = os.path.join(base_dir, "best_params.yml")
+        summary_path = os.path.join(base_dir, "summary.yml")
 
-        mlflow.set_tracking_uri("mlruns")
+        # mlflow.set_tracking_uri("mlruns")
+
         mlflow.set_experiment("xgboost_tuning_time_series")
+        
+        if mlflow.active_run() is None:
+            mlflow.start_run(run_name="xgboost_tuning_time_series")
+
+        kedro_run_id = os.getenv("MLFLOW_RUN_ID")
 
         study = optuna.create_study(
             direction="minimize",
@@ -35,53 +41,51 @@ class XGBoostTuner:
         )
 
         def objective(trial):
-            params = {
-                "n_estimators": trial.suggest_int("n_estimators", 100, 1000),
-                "max_depth": trial.suggest_int("max_depth", 3, 10),
-                "learning_rate": trial.suggest_float("learning_rate", 0.01, 0.3, log=True),
-                "subsample": trial.suggest_float("subsample", 0.5, 1.0),
-                "colsample_bytree": trial.suggest_float("colsample_bytree", 0.5, 1.0),
-                "colsample_bynode": trial.suggest_float("colsample_bynode", 0.5, 1.0),
-                "gamma": trial.suggest_float("gamma", 0.0, 5.0),
-                "reg_alpha": trial.suggest_float("reg_alpha", 1e-8, 10.0, log=True),
-                "reg_lambda": trial.suggest_float("reg_lambda", 1e-8, 10.0, log=True),
-                "min_child_weight": trial.suggest_int("min_child_weight", 1, 20),
-                "booster": trial.suggest_categorical("booster", ["gbtree"]),
-                "n_jobs": -1,
-                "random_state": self.seed
-            }
+            with mlflow.start_run(run_name=f"trial_{trial.number}", nested=True):
+                params = {
+                    "n_estimators": trial.suggest_int("n_estimators", 100, 1000),
+                    "max_depth": trial.suggest_int("max_depth", 3, 10),
+                    "learning_rate": trial.suggest_float("learning_rate", 0.01, 0.3, log=True),
+                    "subsample": trial.suggest_float("subsample", 0.5, 1.0),
+                    "colsample_bytree": trial.suggest_float("colsample_bytree", 0.5, 1.0),
+                    "colsample_bynode": trial.suggest_float("colsample_bynode", 0.5, 1.0),
+                    "gamma": trial.suggest_float("gamma", 0.0, 5.0),
+                    "reg_alpha": trial.suggest_float("reg_alpha", 1e-8, 10.0, log=True),
+                    "reg_lambda": trial.suggest_float("reg_lambda", 1e-8, 10.0, log=True),
+                    "min_child_weight": trial.suggest_int("min_child_weight", 1, 20),
+                    "booster": trial.suggest_categorical("booster", ["gbtree"]),
+                    "n_jobs": -1,
+                    "random_state": self.seed
+                }
 
-            model = XGBRegressor(**params)
-            scores = cross_val_score(model, X, y, cv=self.cv, scoring="neg_root_mean_squared_error", n_jobs=-1)
-            rmse = -scores.mean()
+                model = XGBRegressor(**params)
+                scores = cross_val_score(model, X, y, cv=self.cv, scoring="neg_root_mean_squared_error", n_jobs=-1)
+                rmse = -scores.mean()
 
-            mlflow.log_params(params)
-            mlflow.log_metric("rmse", rmse)
+                mlflow.log_params(params)
+                mlflow.log_metric("rmse", rmse)
+                if kedro_run_id:
+                    mlflow.set_tag("parent_run", kedro_run_id)
 
-            return rmse
+                return rmse
 
-        with mlflow.start_run():
-            study.optimize(objective, n_trials=self.n_trials, timeout=self.timeout, show_progress_bar=True)
-            best_params = study.best_params
-            best_score = study.best_value
+        study.optimize(objective, n_trials=self.n_trials, timeout=self.timeout, show_progress_bar=True)
 
-            mlflow.log_params(best_params)
-            mlflow.log_metric("best_rmse", best_score)
-            mlflow.log_artifact(study_path)
-            mlflow.log_artifact(params_path)
+        best_params = study.best_params
+        best_score = study.best_value
 
-            summary = {
-                "study_path": study_path,
-                "best_score_rmse": best_score,
-                "best_params": best_params,
-                "n_trials": self.n_trials,
-                "cv": self.cv,
-                "seed": self.seed,
-                "timestamp": timestamp
-            }
+        summary = {
+            "study_path": study_path,
+            "best_score_rmse": best_score,
+            "best_params": best_params,
+            "n_trials": self.n_trials,
+            "cv": self.cv,
+            "seed": self.seed,
+            "timestamp": timestamp
+        }
 
-            with open(params_path, "w") as f:
-                yaml.dump(summary, f)
+        with open(summary_path, "w") as f:
+            yaml.dump(summary, f)
 
-        logging.info(f"Tuning complete. Params saved to : {params_path}")
+        logging.info(f"Tuning complete. Summary saved to : {summary_path}")
         return best_params, study

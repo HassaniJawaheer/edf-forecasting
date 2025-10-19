@@ -11,13 +11,13 @@ def create_pipeline(**kwargs) -> Pipeline:
         node(
             func=create_windows,
             inputs=["train_checked_consumption_data", "params:create_windows"],
-            outputs=["X_train_30min", "y_train_30min"],
+            outputs=["X_train", "y_train"],
             name="create_windows"
         ),
         node(
             func=tune,
-            inputs=["X_train_30min", "y_train_30min", "params:tune"],
-            outputs="xgboost_optuna_best_params_30min",
+            inputs=["X_train", "y_train", "params:tune"],
+            outputs="xgboost_time_series_optuna_best_params",
             name="tune"
         )
     ])

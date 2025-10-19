@@ -9,7 +9,7 @@ create_windows:
   target_col: "Consommation"
 
 tune:
-  n_trials: 500
+  n_trials: 5
   timeout: null
   seed: 42
-  cv: 5
+  cv: 3
