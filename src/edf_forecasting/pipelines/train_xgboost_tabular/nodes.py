@@ -6,13 +6,17 @@ import mlflow
 import json
 import os
 import numpy as np
+import subprocess
 from edf_forecasting.components.eco2mix_calibrate_xgboost_tabular_30min import Eco2mixCalibrateTabXGBoost30min
 from edf_forecasting.components.eco2mix_evaluate_xgboost_tabular_30min import Eco2mixEvaluateTabXGBoost30min
 from edf_forecasting.components.eco2mix_train_xgboost_tabular_30min import Eco2mixTrainTabXGBoost30min
 
 
-
 def train(df_train, training_params, params):
+    
+    commit = subprocess.check_output(["git", "rev-parse", "HEAD"]).decode().strip()
+    mlflow.set_tag("git_commit", commit)
+
     mlflow.log_params({
         "train.target_col": params["target_col"],
         "drop_duplicates": params["drop_duplicates"],

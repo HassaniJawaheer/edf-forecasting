@@ -2,12 +2,16 @@ import mlflow
 import json
 import os
 import numpy as np
+import subprocess
 from edf_forecasting.components.eco2mix_evaluate_xgboost_time_series import XGBEvaluate30min
 from edf_forecasting.components.eco2mix_calibrate_xgboost_time_series import XGBCalibrator30min
 from edf_forecasting.components.eco2mix_train_xgboost_time_series import Eco2mixTrainGBoost30min
 
 
 def train(df_train, training_params, params):
+    commit = subprocess.check_output(["git", "rev-parse", "HEAD"]).decode().strip()
+    mlflow.set_tag("git_commit", commit)
+
     mlflow.log_params({
         "train.window_size": params["windows_size"],
         "train.target_col": params["target_col"]
