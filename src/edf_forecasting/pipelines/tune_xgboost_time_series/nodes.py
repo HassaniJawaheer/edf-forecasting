@@ -34,6 +34,7 @@ def create_windows(df_data, params):
 def tune(X, y, params):
     """Run Optuna hyperparameter tuning for XGBoost."""
     tuner = XGBoostTuner(
+        dir=params[dir],
         n_trials=params["n_trials"],
         timeout=params["timeout"],
         cv=params["cv"],

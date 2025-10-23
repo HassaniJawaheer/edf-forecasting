@@ -1,23 +1,30 @@
+"""
+This is a boilerplate pipeline 'train_xgboost_tabular'
+generated using Kedro 1.0.0
+"""
 import mlflow
 import json
 import os
 import numpy as np
-from edf_forecasting.components.eco2mix_evaluate_xgboost_time_series import XGBEvaluate30min
-from edf_forecasting.components.eco2mix_calibrate_xgboost_time_series import XGBCalibrator30min
-from edf_forecasting.components.eco2mix_train_xgboost_time_series import Eco2mixTrainGBoost30min
+from edf_forecasting.components.eco2mix_calibrate_xgboost_tabular_30min import Eco2mixCalibrateTabXGBoost30min
+from edf_forecasting.components.eco2mix_evaluate_xgboost_tabular_30min import Eco2mixEvaluateTabXGBoost30min
+from edf_forecasting.components.eco2mix_train_xgboost_tabular_30min import Eco2mixTrainTabXGBoost30min
+
 
 
 def train(df_train, training_params, params):
     mlflow.log_params({
-        "train.window_size": params["windows_size"],
-        "train.target_col": params["target_col"]
+        "train.target_col": params["target_col"],
+        "drop_duplicates": params["drop_duplicates"],
+        "ensure_float32": params["ensure_float32"]
     })
 
-    trainer = Eco2mixTrainGBoost30min(
+    trainer = Eco2mixTrainTabXGBoost30min(
         df_train=df_train,
         training_params=training_params,
-        windows_size=params["windows_size"],
-        target_col=params["target_col"]
+        target_col=params["target_col"],
+        drop_duplicates=params["drop_duplicates"],
+        ensure_float32=params["ensure_float32"]
     )
 
     model, scores, metadata = trainer.run()
@@ -29,7 +36,7 @@ def train(df_train, training_params, params):
     mlflow.xgboost.log_model(
         xgb_model=model,
         artifact_path="model",
-        registered_model_name="timeseries_xgboost_30min"
+        registered_model_name="tabular_xgboost_30min"
     )
 
     mlflow.log_dict(metadata, "model_metadata.json")
@@ -38,12 +45,13 @@ def train(df_train, training_params, params):
 
 
 def calibrate(df_data, model, params):
-    calibrator = XGBCalibrator30min(
+    calibrator = Eco2mixCalibrateTabXGBoost30min(
         df_cal=df_data,
         model=model,
         error_type=params["error_type"],
-        windows_size=params["windows_size"],
-        target_col=params["target_col"]
+        target_col=params["target_col"],
+        drop_duplicates=params["drop_duplicates"],
+        ensure_float32=params["ensure_float32"]
     )
 
     q_inf, q_sup = calibrator.run(alpha=params["alpha"])
@@ -61,14 +69,15 @@ def calibrate(df_data, model, params):
 
 
 def evaluate(model, df_test, q_inf, q_sup, params):
-    evaluator = XGBEvaluate30min(
+    evaluator = Eco2mixEvaluateTabXGBoost30min(
         model=model,
         df_test=df_test,
         q_inf=q_inf,
         q_sup=q_sup,
         quantile=params["quantile"],
-        windows_size=params["windows_size"],
-        target_col=params["target_col"]
+        target_col=params["target_col"],
+        drop_duplicates=params["drop_duplicates"],
+        ensure_float32=params["ensure_float32"]
     )
 
     results = evaluator.run()
@@ -77,7 +86,7 @@ def evaluate(model, df_test, q_inf, q_sup, params):
         if isinstance(v, (int, float, np.floating)):
             mlflow.log_metric(f"eval.{k}", float(v))
 
-    save_dir = "data/07_model_output/eco2mix/time_series/30min/xgboost/evaluation"
+    save_dir = "data/07_model_output/eco2mix/tabular/30min/xgboost/evaluation"
     os.makedirs(save_dir, exist_ok=True)
     eval_path = os.path.join(save_dir, "evaluation_results.json")
 

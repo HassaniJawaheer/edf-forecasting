@@ -1,0 +1,17 @@
+# This is a boilerplate parameters config generated for pipeline 'tune_xgboost_tabular'
+# using Kedro 1.0.0.
+#
+# Documentation for this file format can be found in "Parameters"
+# Link: https://docs.kedro.org/en/1.0.0/configuration/parameters.html
+
+preprocess:
+  target_col: Consommation
+  drop_duplicates: True
+  ensure_float32: True 
+
+tune_xgboost_tabular:
+  dir: "data/07_model_output/eco2mix/tabular/30min/xgboost/tuning/optuna/study"
+  n_trials: 500
+  timeout: null
+  seed: 42
+  cv: 3

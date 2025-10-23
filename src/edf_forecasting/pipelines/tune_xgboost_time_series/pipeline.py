@@ -17,7 +17,7 @@ def create_pipeline(**kwargs) -> Pipeline:
         node(
             func=tune,
             inputs=["X_train", "y_train", "params:tune"],
-            outputs="xgboost_time_series_optuna_best_params",
+            outputs="xgboost_time_series_optuna_30min_best_params",
             name="tune"
         )
     ])

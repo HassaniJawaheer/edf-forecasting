@@ -10,7 +10,8 @@ from sklearn.model_selection import cross_val_score
 logging.basicConfig(level=logging.INFO)
 
 class XGBoostTuner:
-    def __init__(self, n_trials=20, cv=3, timeout=None, seed=42):
+    def __init__(self, dir, n_trials=20, cv=3, timeout=None, seed=42):
+        self.dir = dir
         self.n_trials = n_trials
         self.cv = cv
         self.timeout = timeout
@@ -18,7 +19,7 @@ class XGBoostTuner:
 
     def run(self, X, y):
         timestamp = datetime.datetime.now().strftime("tuning_%Y-%m-%d_%H-%M")
-        base_dir = f"data/07_model_output/eco2mix/time_series/30min/xgboost/tuning/optuna/study/{timestamp}"
+        base_dir = f"{self.dir}/{timestamp}"
         os.makedirs(base_dir, exist_ok=True)
 
         study_path = os.path.join(base_dir, "optuna_study.db")
@@ -26,10 +27,10 @@ class XGBoostTuner:
 
         # mlflow.set_tracking_uri("mlruns")
 
-        mlflow.set_experiment("xgboost_tuning_time_series")
+        mlflow.set_experiment("xgboost_tuning")
         
         if mlflow.active_run() is None:
-            mlflow.start_run(run_name="xgboost_tuning_time_series")
+            mlflow.start_run(run_name="xgboost_tuning")
 
         kedro_run_id = os.getenv("MLFLOW_RUN_ID")
 
@@ -58,7 +59,10 @@ class XGBoostTuner:
                     "random_state": self.seed
                 }
 
-                model = XGBRegressor(**params)
+                model = XGBRegressor(
+                    enable_categorical=True,
+                    **params
+                )
                 scores = cross_val_score(model, X, y, cv=self.cv, scoring="neg_root_mean_squared_error", n_jobs=-1)
                 rmse = -scores.mean()
 

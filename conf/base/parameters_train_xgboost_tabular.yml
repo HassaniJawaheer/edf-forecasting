@@ -1,0 +1,24 @@
+# This is a boilerplate parameters config generated for pipeline 'train_xgboost_tabular'
+# using Kedro 1.0.0.
+#
+# Documentation for this file format can be found in "Parameters"
+# Link: https://docs.kedro.org/en/1.0.0/configuration/parameters.html
+
+train_tabular_30min:
+  target_col: Consommation
+  drop_duplicates: True
+  ensure_float32: True
+
+calibration_tabular_30min:
+  error_type: raw
+  alpha: 0.05
+  target_col: Consommation
+  drop_duplicates: True
+  ensure_float32: True
+
+evaluate_tabular_30min:
+  quantile: 0.95
+  target_col: Consommation
+  drop_duplicates: True
+  ensure_float32: True
+
