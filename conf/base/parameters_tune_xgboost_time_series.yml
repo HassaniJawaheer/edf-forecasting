@@ -10,7 +10,7 @@ create_windows:
 
 tune:
   dir: "data/07_model_output/eco2mix/time_series/30min/xgboost/tuning/optuna/study"
-  n_trials: 2
+  n_trials: 500
   timeout: null
   seed: 42
   cv: 3
