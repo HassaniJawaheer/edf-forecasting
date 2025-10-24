@@ -9,6 +9,7 @@ from sklearn.model_selection import cross_val_score
 
 logging.basicConfig(level=logging.INFO)
 
+
 class XGBoostTuner:
     def __init__(self, dir, n_trials=20, cv=3, timeout=None, seed=42):
         self.dir = dir
@@ -19,59 +20,46 @@ class XGBoostTuner:
 
     def run(self, X, y):
         timestamp = datetime.datetime.now().strftime("tuning_%Y-%m-%d_%H-%M")
-        base_dir = f"{self.dir}/{timestamp}"
+        base_dir = os.path.join(self.dir, timestamp)
         os.makedirs(base_dir, exist_ok=True)
 
         study_path = os.path.join(base_dir, "optuna_study.db")
         summary_path = os.path.join(base_dir, "summary.yml")
 
-        # mlflow.set_tracking_uri("mlruns")
-
-        mlflow.set_experiment("xgboost_tuning")
-        
-        if mlflow.active_run() is None:
-            mlflow.start_run(run_name="xgboost_tuning")
-
-        kedro_run_id = os.getenv("MLFLOW_RUN_ID")
+        kedro_run_id = os.getenv("MLFLOW_RUN_ID", None)
 
         study = optuna.create_study(
             direction="minimize",
             study_name="xgb_tuning",
             storage=f"sqlite:///{study_path}",
-            load_if_exists=True
+            load_if_exists=True,
         )
 
         def objective(trial):
-            with mlflow.start_run(run_name=f"trial_{trial.number}", nested=True):
-                params = {
-                    "n_estimators": trial.suggest_int("n_estimators", 100, 1000),
-                    "max_depth": trial.suggest_int("max_depth", 3, 10),
-                    "learning_rate": trial.suggest_float("learning_rate", 0.01, 0.3, log=True),
-                    "subsample": trial.suggest_float("subsample", 0.5, 1.0),
-                    "colsample_bytree": trial.suggest_float("colsample_bytree", 0.5, 1.0),
-                    "colsample_bynode": trial.suggest_float("colsample_bynode", 0.5, 1.0),
-                    "gamma": trial.suggest_float("gamma", 0.0, 5.0),
-                    "reg_alpha": trial.suggest_float("reg_alpha", 1e-8, 10.0, log=True),
-                    "reg_lambda": trial.suggest_float("reg_lambda", 1e-8, 10.0, log=True),
-                    "min_child_weight": trial.suggest_int("min_child_weight", 1, 20),
-                    "booster": trial.suggest_categorical("booster", ["gbtree"]),
-                    "n_jobs": -1,
-                    "random_state": self.seed
-                }
+            params = {
+                "n_estimators": trial.suggest_int("n_estimators", 100, 1000),
+                "max_depth": trial.suggest_int("max_depth", 3, 10),
+                "learning_rate": trial.suggest_float("learning_rate", 0.01, 0.3, log=True),
+                "subsample": trial.suggest_float("subsample", 0.5, 1.0),
+                "colsample_bytree": trial.suggest_float("colsample_bytree", 0.5, 1.0),
+                "colsample_bynode": trial.suggest_float("colsample_bynode", 0.5, 1.0),
+                "gamma": trial.suggest_float("gamma", 0.0, 5.0),
+                "reg_alpha": trial.suggest_float("reg_alpha", 1e-8, 10.0, log=True),
+                "reg_lambda": trial.suggest_float("reg_lambda", 1e-8, 10.0, log=True),
+                "min_child_weight": trial.suggest_int("min_child_weight", 1, 20),
+                "booster": "gbtree",
+                "n_jobs": -1,
+                "random_state": self.seed,
+            }
 
-                model = XGBRegressor(
-                    enable_categorical=True,
-                    **params
-                )
-                scores = cross_val_score(model, X, y, cv=self.cv, scoring="neg_root_mean_squared_error", n_jobs=-1)
-                rmse = -scores.mean()
-
-                mlflow.log_params(params)
-                mlflow.log_metric("rmse", rmse)
-                if kedro_run_id:
-                    mlflow.set_tag("parent_run", kedro_run_id)
-
-                return rmse
+            model = XGBRegressor(enable_categorical=True, **params)
+            scores = cross_val_score(
+                model, X, y, cv=self.cv,
+                scoring="neg_root_mean_squared_error",
+                n_jobs=-1,
+            )
+            rmse = -scores.mean()
+            return rmse
 
         study.optimize(objective, n_trials=self.n_trials, timeout=self.timeout, show_progress_bar=True)
 
@@ -85,11 +73,19 @@ class XGBoostTuner:
             "n_trials": self.n_trials,
             "cv": self.cv,
             "seed": self.seed,
-            "timestamp": timestamp
+            "timestamp": timestamp,
         }
 
         with open(summary_path, "w") as f:
             yaml.dump(summary, f)
 
-        logging.info(f"Tuning complete. Summary saved to : {summary_path}")
+        mlflow.log_params(best_params)
+        mlflow.log_metric("best_rmse", best_score)
+        mlflow.log_artifact(summary_path)
+
+        if kedro_run_id:
+            mlflow.set_tag("parent_run", kedro_run_id)
+
+        logging.info(f"Tuning complete. Summary saved to: {summary_path}")
         return best_params, study
+
