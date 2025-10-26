@@ -30,6 +30,9 @@ dependencies = [
   "fastparquet==2024.5.0",
   "holidays==0.52",
   "kedro-datasets~=3.0",
+  "fastapi>=0.120.0",
+  "uvicorn>=0.38.0",
+  "pydantic>=2.11.7",
 ]
 
 [project.scripts]
