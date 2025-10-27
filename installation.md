@@ -83,6 +83,29 @@ uv run kedro run --pipeline=prepare_data --from-nodes="scrape_data" --to-nodes="
 uv run kedro run --pipeline=prepare_data
 uv run kedro run --pipeline=prepare_data --from-nodes="scrape_data"
 
+# Lancer l'api
+uv run uvicorn src.edf_forecasting_api.main:app --reload --port 8000
+
+# Test de l'api 
+```bash
+curl -X POST "http://127.0.0.1:8000/predict" \
+     -H "Content-Type: application/json" \
+     -d '{
+       "features": [
+         [
+           74494.0, 73481.0, 71506.0, 71505.0, 71134.0, 70856.0, 68840.0, 67315.0,
+           65749.0, 64838.0, 64041.0, 64379.0, 64210.0, 64469.0, 64437.0, 64559.0,
+           64785.0, 64281.0, 64292.0, 64862.0, 65353.0, 65879.0, 66180.0, 66643.0,
+           66901.0, 67719.0, 68547.0, 66745.0, 65090.0, 63891.0, 62228.0, 61554.0,
+           61263.0, 61469.0, 62443.0, 65700.0, 68890.0, 70497.0, 71766.0, 72562.0,
+           72184.0, 71493.0, 70440.0, 69167.0, 68044.0, 68829.0, 71485.0, 70639.0
+         ]
+       ],
+       "n_predictions": 48
+     }'
+
+```
+
 
 ## Gestion des versions MLflow
 
