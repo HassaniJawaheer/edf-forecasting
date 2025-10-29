@@ -16,21 +16,30 @@ class ModelManager:
 
     def load_model(self):
         client = mlflow.tracking.MlflowClient()
-        latest = client.get_latest_versions(self.model_name, stages=["Production"])
-        if not latest:
-            logging.info("No model found in Production.")
-            return
-        
-        version = latest[0].version
-        if version != self.current_version:
-            logging.info(f"New model detected : version {version}")
-            with self.lock:
-                # logged_model = 'runs:/0de33fa0279642a1b74d039e6536bc6e/model'
-                # logged_model = "models:/timeseries_xgboost_30min/Production"
-                self.model = mlflow.pyfunc.load_model(f"models:/{self.model_name}/Production")
-                self.current_version = version
-                logging.info(f"Model v{version} successfully loaded")
-    
+        try:
+            versions = client.search_model_versions(f"name='{self.model_name}'")
+            production_versions = [
+                v for v in versions if getattr(v, "current_stage", None) == "Production"
+            ]
+
+            if not production_versions:
+                logging.info("No model found in Productions.")
+                return 
+            
+            latest = max(production_versions, key=lambda v: int(v.version))
+            version = latest.version
+
+            if version != self.current_version:
+                logging.info(f"New model detected : version {version}")
+                with self.lock:
+                    # logged_model = 'runs:/0de33fa0279642a1b74d039e6536bc6e/model'
+                    # logged_model = "models:/timeseries_xgboost_30min/Production"
+                    self.model = mlflow.pyfunc.load_model(f"models:/{self.model_name}/Production")
+                    self.current_version = version
+                    logging.info(f"Model v{version} successfully loaded")
+        except Exception as e:
+            logging.error(f"Error while loading model: {e}")
+            
     def predict(self, consumptions: List, n_predictions: int):
         if self.model is None:
             raise RuntimeError("Model not loaded")
