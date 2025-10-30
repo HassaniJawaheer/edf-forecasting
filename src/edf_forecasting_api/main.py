@@ -4,8 +4,9 @@ from fastapi import FastAPI
 from prometheus_fastapi_instrumentator import Instrumentator
 from fastapi.responses import FileResponse, JSONResponse
 from contextlib import asynccontextmanager
-from edf_forecasting_api.schema import InputData 
+from edf_forecasting_api.schema import InputData, FeedbackData
 from edf_forecasting_api.model_manager import ModelManager
+from edf_forecasting_api.logger_utils import log_feedback, log_predictions
 logging.basicConfig(level=logging.INFO, format="%(asctime)s [%(levelname)s] %(message)s")
 
 
@@ -43,7 +44,20 @@ def favicon():
 
 @app.post("/predict")
 def predict(data: InputData):
+    # Exctract data
     consumptions = data.features
     n_predictions = data.n_predictions
+
+    # Prediction
     predictions = model_manager.predict(consumptions, n_predictions)
+
+    # Logging
+    model_version = model_manager.current_version or "unknown"
+    log_predictions(consumptions, predictions, model_version, n_predictions)
+
     return {"predictions": predictions}
+
+@app.post("/feedback")
+def feedback(data: FeedbackData):
+    log_feedback(data.inputs, data.true_values)
+    return {"message": "Feedback saved"}

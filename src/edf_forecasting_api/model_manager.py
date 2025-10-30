@@ -45,15 +45,34 @@ class ModelManager:
             raise RuntimeError("Model not loaded")
         with self.lock:
             X = np.array(consumptions)
+            #logging.info(f" Initail X size : {X.shape}")
+
             predictions = []
+
             for _ in range(n_predictions):
+                # Prediction
                 y_pred = self.model.predict(X)
+                #logging.info(f"y_pred initial shape : {y_pred.shape}")
 
-                y_pred_list = y_pred.tolist() if hasattr(y_pred, "tolist") else y_pred
-                predictions.append(y_pred_list)
-                X = np.hstack([X[:, 1:], np.array(y_pred).reshape(-1, 1)])
+                y_pred = np.array(y_pred).reshape(-1,1)
+                #logging.info(f"y_pred sise : {len(y_pred)}")
 
-            return [float(p) for sublist in predictions for p in np.ravel(sublist)]
+                # Prediction update
+                predictions.append(y_pred.tolist())
+                #logging.info(f"Prediction shape : {np.array(predictions).shape}")
+
+                # Auto regression
+                X = np.hstack([X[:, 1:], y_pred])
+                #logging.info(f"X shape : {X.shape}")
+            
+            # Convert predictions to a 2D array (N_entries × n_predictions)
+            pred_array = np.squeeze(np.array(predictions)).T
+            #logging.info(f"pred_array shape : {pred_array.shape}")
+
+            if pred_array.shape[0] == 1:
+                return pred_array.flatten().tolist()
+            else:
+                return pred_array.tolist()
     
     def start_watcher(self):
         def watch():
