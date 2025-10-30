@@ -1,6 +1,7 @@
 import os
 import logging
 from fastapi import FastAPI
+from prometheus_fastapi_instrumentator import Instrumentator
 from fastapi.responses import FileResponse, JSONResponse
 from contextlib import asynccontextmanager
 from edf_forecasting_api.schema import InputData 
@@ -26,6 +27,10 @@ async def lifespan(app: FastAPI):
 
 # FastAPI app
 app = FastAPI(title="Consumption Forecasting API", lifespan=lifespan)
+
+# Expose Prometheus metrics for API monitoring
+Instrumentator = Instrumentator().instrument(app=app)
+Instrumentator.expose(app)
 
 @app.get("/")
 def root():

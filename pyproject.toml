@@ -33,6 +33,7 @@ dependencies = [
   "fastapi>=0.120.0",
   "uvicorn>=0.38.0",
   "pydantic>=2.11.7",
+  "prometheus-fastapi-instrumentator>=7.1.0",
 ]
 
 [project.scripts]
