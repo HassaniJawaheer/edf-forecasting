@@ -6,5 +6,6 @@ class InputData(BaseModel):
     n_predictions: Optional[int] = 1
 
 class FeedbackData(BaseModel):
+    prediction_id: str
     inputs: List[List[float]]
     true_values: List[List[float]]

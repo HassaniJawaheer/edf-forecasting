@@ -1,5 +1,6 @@
 import os
 import logging
+from uuid import uuid4
 from fastapi import FastAPI
 from prometheus_fastapi_instrumentator import Instrumentator
 from fastapi.responses import FileResponse, JSONResponse
@@ -7,6 +8,7 @@ from contextlib import asynccontextmanager
 from edf_forecasting_api.schema import InputData, FeedbackData
 from edf_forecasting_api.model_manager import ModelManager
 from edf_forecasting_api.logger_utils import log_feedback, log_predictions
+from edf_forecasting_api.ml_monitoring import schedule_monitoring
 logging.basicConfig(level=logging.INFO, format="%(asctime)s [%(levelname)s] %(message)s")
 
 
@@ -20,6 +22,9 @@ async def lifespan(app: FastAPI):
     model_manager.load_model()
     model_manager.start_watcher()
     logging.info("Model monitoring enabled.")
+
+    # Performance monitoring
+    schedule_monitoring()
 
     yield
 
@@ -44,6 +49,9 @@ def favicon():
 
 @app.post("/predict")
 def predict(data: InputData):
+    # Generate prediction identifier
+    prediction_id = str(uuid4())
+
     # Exctract data
     consumptions = data.features
     n_predictions = data.n_predictions
@@ -53,11 +61,11 @@ def predict(data: InputData):
 
     # Logging
     model_version = model_manager.current_version or "unknown"
-    log_predictions(consumptions, predictions, model_version, n_predictions)
+    log_predictions(consumptions, predictions, model_version, n_predictions, prediction_id)
 
-    return {"predictions": predictions}
+    return {"predictions": predictions, "prediction_id": prediction_id}
 
 @app.post("/feedback")
 def feedback(data: FeedbackData):
-    log_feedback(data.inputs, data.true_values)
+    log_feedback(data.inputs, data.true_values, data.prediction_id)
     return {"message": "Feedback saved"}
