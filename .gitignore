@@ -6,6 +6,10 @@ conf/local/**
 !conf/local/.gitkeep
 .telemetry
 
+# ignore logs and report
+src/logs/
+src/reports/
+
 # ignore potentially sensitive credentials files
 conf/**/*credentials*
 

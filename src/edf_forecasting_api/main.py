@@ -67,5 +67,5 @@ def predict(data: InputData):
 
 @app.post("/feedback")
 def feedback(data: FeedbackData):
-    log_feedback(data.inputs, data.true_values, data.prediction_id)
+    log_feedback(data.inputs, data.outputs, data.prediction_id)
     return {"message": "Feedback saved"}

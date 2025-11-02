@@ -18,20 +18,20 @@ def log_predictions(inputs, outputs, model_version, n_predictions, prediction_id
         "prediction_id": prediction_id,
         "n_predictions": n_predictions,
         "inputs": inputs,
-        "output": outputs,
+        "outputs": outputs,
         "n_inputs": len(inputs),
         "n_outputs": len(outputs)
     }
     with open(PREDICTION_LOG_FILE, "a") as f:
         f.write(json.dumps(record) + "\n")
 
-def log_feedback(inputs, true_values, prediction_id):
+def log_feedback(inputs, outputs, prediction_id):
     """Add a lin in grounds_truth.jsonl"""
     record = {
         "timespamp": datetime.now().isoformat(),
         "prediction_id": prediction_id,
         "inputs": inputs,
-        "true_values": true_values
+        "outputs": outputs
     }
     with open(FEEDBACK_LOG_FILE, "a") as f:
         f.write(json.dumps(record) + "\n")

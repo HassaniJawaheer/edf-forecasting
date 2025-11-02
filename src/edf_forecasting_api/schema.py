@@ -8,4 +8,4 @@ class InputData(BaseModel):
 class FeedbackData(BaseModel):
     prediction_id: str
     inputs: List[List[float]]
-    true_values: List[List[float]]
+    outputs: List[List[float]]

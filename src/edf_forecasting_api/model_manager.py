@@ -58,7 +58,7 @@ class ModelManager:
                 #logging.info(f"y_pred sise : {len(y_pred)}")
 
                 # Prediction update
-                predictions.append(y_pred.tolist())
+                predictions.append(y_pred)
                 #logging.info(f"Prediction shape : {np.array(predictions).shape}")
 
                 # Auto regression
@@ -66,13 +66,11 @@ class ModelManager:
                 #logging.info(f"X shape : {X.shape}")
             
             # Convert predictions to a 2D array (N_entries × n_predictions)
-            pred_array = np.squeeze(np.array(predictions)).T
+            #pred_array = np.squeeze(np.array(predictions)).T
+            pred_array = np.concatenate(predictions, axis=1)
             #logging.info(f"pred_array shape : {pred_array.shape}")
 
-            if pred_array.shape[0] == 1:
-                return pred_array.flatten().tolist()
-            else:
-                return pred_array.tolist()
+            return pred_array.tolist()
     
     def start_watcher(self):
         def watch():
