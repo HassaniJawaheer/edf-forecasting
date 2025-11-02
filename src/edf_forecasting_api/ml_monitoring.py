@@ -61,6 +61,7 @@ def generate_monitoring_reports():
     drift_report_html = result_drift_report.get_html_str(as_iframe=False)
     with open(os.path.join(REPORT_DIR, "data_drift_report.html"), "w") as f:
         f.write(drift_report_html)
+    logging.info(f"Data drift report generated at src/reports/data_drift_report.html")
 
     if not merged.empty:
         print(f"ref_perf: {ref_perf.columns}")
@@ -79,6 +80,7 @@ def generate_monitoring_reports():
         perf_report_html = result_perf_report.get_html_str(as_iframe=False)
         with open(os.path.join(REPORT_DIR, "performance_report.html"), "w") as f:
             f.write(perf_report_html)
+        logging.info(f"Performance report generated at src/reports/performance_report.html")
 
 def schedule_monitoring():
     scheduler = BackgroundScheduler()

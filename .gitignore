@@ -6,9 +6,10 @@ conf/local/**
 !conf/local/.gitkeep
 .telemetry
 
-# ignore logs and report
+# ignore logs, test datas and report
 src/logs/
 src/reports/
+src/edf_forecasting_api/data/
 
 # ignore potentially sensitive credentials files
 conf/**/*credentials*

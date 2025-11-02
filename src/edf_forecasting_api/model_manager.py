@@ -45,30 +45,22 @@ class ModelManager:
             raise RuntimeError("Model not loaded")
         with self.lock:
             X = np.array(consumptions)
-            #logging.info(f" Initail X size : {X.shape}")
 
             predictions = []
 
             for _ in range(n_predictions):
                 # Prediction
                 y_pred = self.model.predict(X)
-                #logging.info(f"y_pred initial shape : {y_pred.shape}")
 
                 y_pred = np.array(y_pred).reshape(-1,1)
-                #logging.info(f"y_pred sise : {len(y_pred)}")
 
                 # Prediction update
                 predictions.append(y_pred)
-                #logging.info(f"Prediction shape : {np.array(predictions).shape}")
 
                 # Auto regression
                 X = np.hstack([X[:, 1:], y_pred])
-                #logging.info(f"X shape : {X.shape}")
             
-            # Convert predictions to a 2D array (N_entries × n_predictions)
-            #pred_array = np.squeeze(np.array(predictions)).T
             pred_array = np.concatenate(predictions, axis=1)
-            #logging.info(f"pred_array shape : {pred_array.shape}")
 
             return pred_array.tolist()
     
