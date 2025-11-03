@@ -190,3 +190,17 @@ test_scores_tabular_xgboost_30min:
   type: yaml.YAMLDataset
   filepath: data/07_model_output/eco2mix/tabular/30min/xgboost/evaluation/test_scores.yml
   versioned: true
+
+reference_data_drift:
+  type: pandas.CSVDataset
+  filepath: data/03_primary/eco2mix/definitive/30min/checked/reference/reference_data_drift.csv
+  save_args:
+    index: False
+  versioned: true
+
+reference_data_perf:
+  type: pandas.CSVDataset
+  filepath: data/03_primary/eco2mix/definitive/30min/checked/reference/reference_data_perf.csv
+  save_args:
+    index: False
+  versioned: true

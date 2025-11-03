@@ -14,6 +14,16 @@ FEEDBACK_LOG = os.path.join(LOG_DIR, "ground_truth.jsonl")
 REPORT_DIR = "src/reports"
 os.makedirs(REPORT_DIR, exist_ok=True)
 
+
+import glob
+
+def get_latest_versioned_file(base_path: str) -> str:
+    pattern = os.path.join(base_path, "*/", os.path.basename(base_path))
+    matches = glob.glob(pattern)
+    if not matches:
+        raise FileNotFoundError(f"No versioned files found for {base_path}")
+    return sorted(matches)[-1]
+
 def flatten_predictions(df):
     rows = []
     for _, row in df.iterrows():
@@ -31,16 +41,13 @@ def flatten_predictions(df):
     return pd.DataFrame(rows)
 
 def generate_monitoring_reports():
-    if not os.path.exists(PREDICTION_LOG):
-        raise FileNotFoundError("Log file not found.")
-    if not os.path.exists(REFERENCE_DRIFT):
-        raise FileNotFoundError("Reference drift data not found.")
-    if not os.path.exists(REFERENCE_PERF):
-        raise FileNotFoundError("Reference performance data not found.")
+    latest_ref_drift = get_latest_versioned_file(REFERENCE_DRIFT)
+    latest_ref_perf = get_latest_versioned_file(REFERENCE_PERF)
+
+    ref_drift = pd.read_csv(latest_ref_drift)
+    ref_perf = pd.read_csv(latest_ref_perf)
 
     preds = pd.read_json(PREDICTION_LOG, lines=True)
-    ref_drift = pd.read_csv(REFERENCE_DRIFT)
-    ref_perf = pd.read_csv(REFERENCE_PERF)
     flat_preds = flatten_predictions(preds)
 
     if os.path.exists(FEEDBACK_LOG):
@@ -64,9 +71,7 @@ def generate_monitoring_reports():
     logging.info(f"Data drift report generated at src/reports/data_drift_report.html")
 
     if not merged.empty:
-        print(f"ref_perf: {ref_perf.columns}")
         merged = merged[["target", "prediction"]].dropna().copy()
-        print(f"merged: {merged.columns}")
 
         definition = DataDefinition(
             regression=[Regression(target="target", prediction="prediction")]
@@ -84,5 +89,5 @@ def generate_monitoring_reports():
 
 def schedule_monitoring():
     scheduler = BackgroundScheduler()
-    scheduler.add_job(generate_monitoring_reports, "interval", seconds=500)
+    scheduler.add_job(generate_monitoring_reports, "interval", seconds=60)
     scheduler.start()

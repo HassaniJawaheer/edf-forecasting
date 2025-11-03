@@ -1,0 +1,11 @@
+# This is a boilerplate parameters config generated for pipeline 'create_reference_data'
+# using Kedro 1.0.0.
+#
+# Documentation for this file format can be found in "Parameters"
+# Link: https://docs.kedro.org/en/1.0.0/configuration/parameters.html
+
+create_reference_data:
+  target_col: "Consommation"
+  window_size: 48
+  fraction: 10000
+  reference_dir: "./data/03_primary/eco2mix/definitive/30min/checked/reference"

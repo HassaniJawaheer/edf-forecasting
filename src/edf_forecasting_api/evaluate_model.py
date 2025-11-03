@@ -27,7 +27,7 @@ def simulate_predictions_and_feedbacks(df: pd.DataFrame, target_col="Consommatio
     all_feedbacks = []
 
     for i, (features, true_val) in enumerate(zip(X, y)):
-        payload_pred = {"features": features.tolist(), "n_predictions": 1}
+        payload_pred = {"features": [features.tolist()], "n_predictions": 1}
         try:
             response = requests.post(API_URL_PREDICT, json=payload_pred)
             response.raise_for_status()
@@ -44,7 +44,7 @@ def simulate_predictions_and_feedbacks(df: pd.DataFrame, target_col="Consommatio
 
             feedback_payload = {
                 "prediction_id": prediction_id,
-                "inputs": features.tolist(),
+                "inputs": [features.tolist()],
                 "outputs": [[true_val]]
             }
 
