@@ -10,10 +10,11 @@ FEEDBACK_LOG_FILE = os.path.join(LOG_DIR, "ground_truth.jsonl")
 os.makedirs(LOG_DIR, exist_ok=True)
 
 
-def log_predictions(inputs, outputs, model_version, n_predictions, prediction_id):
+def log_predictions(inputs, outputs, model_name, model_version, n_predictions, prediction_id):
     """Add a line in predictions.jsonl"""
     record = {
         "timestamp": datetime.now().isoformat(),
+        "model_name": model_name,
         "model_version": model_version,
         "prediction_id": prediction_id,
         "n_predictions": n_predictions,

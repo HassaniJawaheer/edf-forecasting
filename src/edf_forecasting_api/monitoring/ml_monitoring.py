@@ -53,6 +53,10 @@ def generate_monitoring_reports(storage: MetricsStorage):
     preds = pd.read_json(PREDICTION_LOG, lines=True)
     flat_preds = flatten_predictions(preds)
 
+    # Get version model
+    model_version = preds["model_version"][0]
+    model_name = preds["model_name"][0]
+
     if os.path.exists(FEEDBACK_LOG):
         feedbacks = pd.read_json(FEEDBACK_LOG, lines=True)
         flat_feedbacks = flatten_predictions(feedbacks)
@@ -101,12 +105,16 @@ def generate_monitoring_reports(storage: MetricsStorage):
     
     # Create the dict metrics:
     metrics = {}
+    metrics["model_version"] = model_version
+    metrics["model_name"] = model_name
     metrics["timestamp"] = timestamp
+    metrics["drift_report_path"] = drift_report_html_path
     metrics["drift_score"] = drift_metrics['metrics'][0]['result']['drift_share']
     if perf_metrics is not None:
         metrics["mae"] = perf_metrics['metrics'][0]['result']['current']['mean_abs_error']
         metrics["rmse"] = perf_metrics['metrics'][0]['result']['current']['rmse']
         metrics["r2"] = perf_metrics['metrics'][0]['result']['current']['r2']
+        metrics["perf_report_path"] = perf_report_html_path
     
     # Add metrics
     storage.store_metrics(metrics)

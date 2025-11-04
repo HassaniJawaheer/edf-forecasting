@@ -14,10 +14,14 @@ class MetricsStorage:
         cursor.execute("""
         CREATE TABLE IF NOT EXISTS performance_metrics (
             timestamp TEXT PRIMARY KEY,
+            model_name TEXT,
+            model_version INT,
             mae REAL,
             rmse REAL,
             r2 REAL,
-            drift_score REAL
+            drift_score REAL,
+            drift_report_path TEXT,
+            perf_report_path TEXT,
         )
         """) 
         conn.commit()
@@ -28,8 +32,8 @@ class MetricsStorage:
         conn = sqlite3.connect(self.db_path)
         cursor = conn.cursor()
         cursor.execute("""
-        INSERT INTO performance_metrics (timestamp, mae, rmse, r2, drift_score)
-        VALUES (:timestamp, :mae, :rmse, :r2, :drift_score)
+        INSERT INTO performance_metrics (timestamp, model_name, model_version, mae, rmse, r2, drift_score, drift_report_path, perf_report_path)
+        VALUES (:timestamp, :model_name, :model_version, :mae, :rmse, :r2, :drift_score, :drift_report_path, :perf_report_path)
         """, metrics)
         conn.commit()
         conn.close()

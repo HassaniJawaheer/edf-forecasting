@@ -63,8 +63,9 @@ def predict(data: InputData):
     predictions = model_manager.predict(consumptions, n_predictions)
 
     # Logging
-    model_version = model_manager.current_version or "unknown"
-    log_predictions(consumptions, predictions, model_version, n_predictions, prediction_id)
+    model_version = model_manager.current_version or 0 # 0 means unknown
+    model_name = model_manager.model_name or "unknown"
+    log_predictions(consumptions, predictions, model_name, model_version, n_predictions, prediction_id)
 
     return {"predictions": predictions, "prediction_id": prediction_id}
 
