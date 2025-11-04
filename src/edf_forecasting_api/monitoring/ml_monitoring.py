@@ -1,9 +1,12 @@
 import os
 import pandas as pd
 import logging
+import glob
+from datetime import datetime
 from evidently import Dataset, Report, DataDefinition, Regression
 from evidently.presets import DataDriftPreset, RegressionPreset
 from apscheduler.schedulers.background import BackgroundScheduler
+from src.edf_forecasting_api.monitoring.metrics_storage import MetricsStorage
 
 
 LOG_DIR = "src/logs"
@@ -12,10 +15,8 @@ REFERENCE_PERF = "./data/03_primary/eco2mix/definitive/30min/checked/reference/r
 PREDICTION_LOG = os.path.join(LOG_DIR, "predictions.jsonl")
 FEEDBACK_LOG = os.path.join(LOG_DIR, "ground_truth.jsonl")
 REPORT_DIR = "src/reports"
+
 os.makedirs(REPORT_DIR, exist_ok=True)
-
-
-import glob
 
 def get_latest_versioned_file(base_path: str) -> str:
     pattern = os.path.join(base_path, "*/", os.path.basename(base_path))
@@ -40,9 +41,11 @@ def flatten_predictions(df):
                 rows.append(entry)
     return pd.DataFrame(rows)
 
-def generate_monitoring_reports():
+def generate_monitoring_reports(storage: MetricsStorage):
     latest_ref_drift = get_latest_versioned_file(REFERENCE_DRIFT)
     latest_ref_perf = get_latest_versioned_file(REFERENCE_PERF)
+
+    timestamp = datetime.now().strftime("%Y-%m-%d_%H-%M-%S")
 
     ref_drift = pd.read_csv(latest_ref_drift)
     ref_perf = pd.read_csv(latest_ref_perf)
@@ -66,10 +69,15 @@ def generate_monitoring_reports():
         current_data=flat_preds.drop(columns=["prediction_id"], errors="ignore")[["target"]]
     )
     drift_report_html = result_drift_report.get_html_str(as_iframe=False)
-    with open(os.path.join(REPORT_DIR, "data_drift_report.html"), "w") as f:
-        f.write(drift_report_html)
-    logging.info(f"Data drift report generated at src/reports/data_drift_report.html")
 
+    drift_report_html_path = f"data_drift_report_{timestamp}.html"
+    with open(os.path.join(REPORT_DIR, drift_report_html_path), "w") as f:
+        f.write(drift_report_html)
+    
+    # Get drif metrics
+    drift_metrics = result_drift_report.as_dict()
+    
+    perf_metrics = None
     if not merged.empty:
         merged = merged[["target", "prediction"]].dropna().copy()
 
@@ -83,11 +91,29 @@ def generate_monitoring_reports():
         perf_report = Report(metrics=[RegressionPreset()], include_tests=True)
         result_perf_report = perf_report.run(reference_data=reference, current_data=current)
         perf_report_html = result_perf_report.get_html_str(as_iframe=False)
-        with open(os.path.join(REPORT_DIR, "performance_report.html"), "w") as f:
-            f.write(perf_report_html)
-        logging.info(f"Performance report generated at src/reports/performance_report.html")
 
-def schedule_monitoring():
+        perf_report_html_path = f"performance_report_{timestamp}.html"
+        with open(os.path.join(REPORT_DIR, perf_report_html_path), "w") as f:
+            f.write(perf_report_html)
+        
+        # Get perf metrics
+        perf_metrics = result_perf_report.as_dict()
+    
+    # Create the dict metrics:
+    metrics = {}
+    metrics["timestamp"] = timestamp
+    metrics["drift_score"] = drift_metrics['metrics'][0]['result']['drift_share']
+    if perf_metrics is not None:
+        metrics["mae"] = perf_metrics['metrics'][0]['result']['current']['mean_abs_error']
+        metrics["rmse"] = perf_metrics['metrics'][0]['result']['current']['rmse']
+        metrics["r2"] = perf_metrics['metrics'][0]['result']['current']['r2']
+    
+    # Add metrics
+    storage.store_metrics(metrics)
+
+    logging.info(f"Performance and Drift report generated at src/reports")
+
+def schedule_monitoring(storage):
     scheduler = BackgroundScheduler()
-    scheduler.add_job(generate_monitoring_reports, "interval", seconds=60)
+    scheduler.add_job(lambda: generate_monitoring_reports(storage), "interval", seconds=60)
     scheduler.start()

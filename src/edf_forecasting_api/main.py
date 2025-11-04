@@ -8,7 +8,8 @@ from contextlib import asynccontextmanager
 from edf_forecasting_api.schema import InputData, FeedbackData
 from edf_forecasting_api.model_manager import ModelManager
 from edf_forecasting_api.logger_utils import log_feedback, log_predictions
-from edf_forecasting_api.ml_monitoring import schedule_monitoring
+from edf_forecasting_api.monitoring.ml_monitoring import schedule_monitoring
+from src.edf_forecasting_api.monitoring.metrics_storage import MetricsStorage
 logging.basicConfig(level=logging.INFO, format="%(asctime)s [%(levelname)s] %(message)s")
 
 
@@ -24,7 +25,9 @@ async def lifespan(app: FastAPI):
     logging.info("Model monitoring enabled.")
 
     # Performance monitoring
-    schedule_monitoring()
+    METRICS_DB = "src/reports/db/metrics.db"
+    storage = MetricsStorage(METRICS_DB)
+    schedule_monitoring(storage)
 
     yield
 
