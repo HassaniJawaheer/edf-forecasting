@@ -1,13 +1,18 @@
 import os
+import json
 import pandas as pd
 import logging
 import glob
+import mlflow
 from datetime import datetime
 from evidently import Dataset, Report, DataDefinition, Regression
 from evidently.presets import DataDriftPreset, RegressionPreset
 from apscheduler.schedulers.background import BackgroundScheduler
 from src.edf_forecasting_api.monitoring.metrics_storage import MetricsStorage
 
+# mlflow tracking
+mlflow.set_tracking_uri("http://127.0.0.1:5000")
+mlflow.set_experiment("edf_forecasting_monitoring")
 
 LOG_DIR = "src/logs"
 REFERENCE_DRIFT = "./data/03_primary/eco2mix/definitive/30min/checked/reference/reference_data_drift.csv"
@@ -79,7 +84,7 @@ def generate_monitoring_reports(storage: MetricsStorage):
         f.write(drift_report_html)
     
     # Get drif metrics
-    drift_metrics = result_drift_report.as_dict()
+    drift_metrics = json.loads(result_drift_report.json())
     
     perf_metrics = None
     if not merged.empty:
@@ -101,27 +106,58 @@ def generate_monitoring_reports(storage: MetricsStorage):
             f.write(perf_report_html)
         
         # Get perf metrics
-        perf_metrics = result_perf_report.as_dict()
+        perf_metrics = json.loads(result_perf_report.json())
     
     # Create the dict metrics:
-    metrics = {}
-    metrics["model_version"] = model_version
-    metrics["model_name"] = model_name
-    metrics["timestamp"] = timestamp
-    metrics["drift_report_path"] = drift_report_html_path
-    metrics["drift_score"] = drift_metrics['metrics'][0]['result']['drift_share']
-    if perf_metrics is not None:
-        metrics["mae"] = perf_metrics['metrics'][0]['result']['current']['mean_abs_error']
-        metrics["rmse"] = perf_metrics['metrics'][0]['result']['current']['rmse']
-        metrics["r2"] = perf_metrics['metrics'][0]['result']['current']['r2']
-        metrics["perf_report_path"] = perf_report_html_path
+    metrics = {
+        "timestamp": timestamp,
+        "model_name": model_name,
+        "model_version": str(model_version), # because why not
+        "drift_report_path": drift_report_html_path,
+        "drift_score": next(m["value"] for m in drift_metrics["metrics"] if "ValueDrift" in m["metric_id"])
+    }
+
+    if perf_metrics:
+        perf_index = {m["metric_id"]: m["value"] for m in perf_metrics["metrics"]}
+    
+        metrics.update({
+            "rmse": next((v for k, v in perf_index.items() if "RMSE" in k), None),
+            "mae": next((v["mean"] for k, v in perf_index.items() if "MAE" in k and isinstance(v, dict)), None),
+            "r2": next((v for k, v in perf_index.items() if "R2Score" in k), None),
+            "perf_report_path": perf_report_html_path,
+        })
+    print(metrics)
     
     # Add metrics
     storage.store_metrics(metrics)
 
     logging.info(f"Performance and Drift report generated at src/reports")
 
+
+    # Log report in MLflow
+    with mlflow.start_run(run_name=f"monitoring_{timestamp}"):
+        drift_path_full = os.path.join(REPORT_DIR, drift_report_html_path)
+        mlflow.log_artifact(drift_path_full, artifact_path="monitoring_reports")
+
+        if "perf_report_path" in metrics:
+            perf_path_full = os.path.join(REPORT_DIR, metrics["perf_report_path"])
+            mlflow.log_artifact(perf_path_full, artifact_path="monitoring_reports")
+
+        mlflow.log_metrics({
+            "drift_score": metrics["drift_score"],
+            "rmse": metrics.get("rmse", 0.0),
+            "mae": metrics.get("mae", 0.0),
+            "r2": metrics.get("r2", 0.0)
+        })
+
+        mlflow.set_tags({
+            "model_name": model_name,
+            "model_version": str(model_version),
+            "timestamp": timestamp
+        })
+
+
 def schedule_monitoring(storage):
     scheduler = BackgroundScheduler()
-    scheduler.add_job(lambda: generate_monitoring_reports(storage), "interval", seconds=60)
+    scheduler.add_job(lambda: generate_monitoring_reports(storage), "interval", seconds=40)
     scheduler.start()

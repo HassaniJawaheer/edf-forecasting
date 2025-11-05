@@ -15,15 +15,15 @@ class MetricsStorage:
         CREATE TABLE IF NOT EXISTS performance_metrics (
             timestamp TEXT PRIMARY KEY,
             model_name TEXT,
-            model_version INT,
+            model_version TEXT,
             mae REAL,
             rmse REAL,
             r2 REAL,
             drift_score REAL,
             drift_report_path TEXT,
-            perf_report_path TEXT,
+            perf_report_path TEXT
         )
-        """) 
+        """)
         conn.commit()
         conn.close()
 
