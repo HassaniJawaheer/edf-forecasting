@@ -165,3 +165,6 @@ venv.bak/
 
 # mlflow local runs
 mlruns/*
+
+# mlflow arti
+mlartifacts/*
