@@ -19,6 +19,7 @@ def register_pipelines() -> dict[str, Pipeline]:
         + pipelines["process_data"]
         + pipelines["tune_xgboost_time_series"]
         + pipelines["train_xgboost_time_series"]
+        + pipelines["create_reference_data"]
     )
 
     pipelines["__default__"] = pipelines["xgboost_time_series"]

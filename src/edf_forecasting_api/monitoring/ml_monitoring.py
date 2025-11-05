@@ -137,5 +137,5 @@ def generate_monitoring_reports(storage: MetricsStorage):
 
 def schedule_monitoring(storage):
     scheduler = BackgroundScheduler()
-    scheduler.add_job(lambda: generate_monitoring_reports(storage), "interval", seconds=40)
+    scheduler.add_job(lambda: generate_monitoring_reports(storage), "interval", seconds=500)
     scheduler.start()

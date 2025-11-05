@@ -13,4 +13,4 @@ tune:
   n_trials: 500
   timeout: null
   seed: 42
-  cv: 3
+  cv: 5
