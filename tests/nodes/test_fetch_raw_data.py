@@ -17,7 +17,7 @@ def test_scrape_data_calls_scraper_and_returns_status(tmp_path):
     }
 
     # Mocking Eco2MixScraper and mlflow
-    with patch("edf_forecasting.components.eco2mix_scraper.Eco2MixScraper") as MockScraper, patch("edf_forecasting.pipelines.fetch_raw_data.nodes.mlflow"):
+    with patch("edf_forecasting.pipelines.fetch_raw_data.nodes.Eco2MixScraper") as MockScraper, patch("edf_forecasting.pipelines.fetch_raw_data.nodes.mlflow"):
         
         scraper_instance = MagicMock()
         MockScraper.return_value = scraper_instance
@@ -45,7 +45,7 @@ def test_prestructure_data_calls_preparator_and_returns_dataframes():
     fake_df_consumption = pd.DataFrame({"a": [1,2,3]})
     fake_df_tempo = pd.DataFrame({"b": [4,5]})
 
-    with patch("edf_forcasting.components.eco2mix_prestructuration_data.Eco2MixDataPreparator") as MockPreparator, \
+    with patch("edf_forecasting.pipelines.fetch_raw_data.nodes.Eco2MixDataPreparator") as MockPreparator, \
         patch("edf_forecasting.pipelines.fetch_raw_data.nodes.mlflow"):
         
         preparator_instance = MagicMock()
@@ -65,10 +65,10 @@ def test_prestructure_data_calls_preparator_and_returns_dataframes():
 
 def test_clean_data_calls_cleaner_and_returns_cleaned_dfs():
     params = {
-        "columns_to_keep": ["date", "consumption"],
-        "tempo_column_name": "tempo",
-        "new_tempo_column_name": "tempo_clean",
-        "consumption_col": "consumption",
+        "columns_to_keep": ["Datetime", "Consommation"],
+        "tempo_column_name": "Type de jour TEMPO",
+        "new_tempo_column_name": "tempo",
+        "consumption_col": "Consommation",
     }
 
     df_def = pd.DataFrame({"consumption": [1, 2]})
@@ -77,7 +77,7 @@ def test_clean_data_calls_cleaner_and_returns_cleaned_dfs():
     df_def_cleaned = pd.DataFrame({"consumption": [1, 2]})
     df_tempo_cleaned = pd.DataFrame({"tempo_clean": ["A", "B"]})
 
-    with patch("edf_forecasting.components.eco2mix_clean_data.Eco2mixCleaner") as MockCleaner, \
+    with patch("edf_forecasting.pipelines.fetch_raw_data.nodes.Eco2mixCleaner") as MockCleaner, \
         patch("edf_forecasting.pipelines.fetch_raw_data.nodes.mlflow"):
 
         cleaner_instance = MagicMock()
@@ -88,10 +88,10 @@ def test_clean_data_calls_cleaner_and_returns_cleaned_dfs():
         out_def, out_tempo = clean_data(df_def, df_tempo, params)
 
         MockCleaner.assert_called_once_with(
-            columns_to_keep=["date", "consumption"],
-            tempo_column_name="tempo",
-            new_tempo_column_name="tempo_clean",
-            consumption_col="consumption",
+            columns_to_keep=["Datetime", "Consommation"],
+            tempo_column_name="Type de jour TEMPO",
+            new_tempo_column_name="tempo",
+            consumption_col="Consommation",
         )
 
         cleaner_instance.clean_definitive.assert_called_once_with(df_def)
