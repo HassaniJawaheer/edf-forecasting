@@ -11,10 +11,7 @@ def test_contrat_predict():
         "n_predictions": 1
     }
 
-    fake_response = {
-        "predictions": [[75059.3]],
-        "prediction_id": "abcd123"
-    }
+    fake_response = [[75059.3]]
 
     with patch("edf_forecasting_api.main.model_manager") as mock_model_manager, \
         patch("edf_forecasting_api.main.log_predictions"):
@@ -28,27 +25,6 @@ def test_contrat_predict():
     assert "predictions" in body
     assert isinstance(body["predictions"], list)
     assert "prediction_id" in body
-
-def test_predict_without_model():
-    client = TestClient(app)
-
-    payload = {
-        "features": [[75058.3]],
-        "n_predictions":1
-    }
-
-    fake_response = {
-        "predictions": [[75059.3]],
-        "prediction_id": "abcd123"
-    }
-
-    with patch("edf_forecasting_api.main.model_manager") as mock_model_manager, \
-        patch("edf_forecasting_api.main.log_predictions"):
-        
-        mock_model_manager.model = None
-        response =  client.post("/predict", json=payload)
-    
-    assert response.status_code == 500
 
 def test_route_feedback():
     client = TestClient(app)

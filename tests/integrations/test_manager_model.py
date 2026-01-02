@@ -49,7 +49,7 @@ def test_load_model_new_version_detected():
     fake_version.current_stage = "Production"
 
     with patch("mlflow.tracking.MlflowClient") as MockClient, \
-        patch("mlflow.pyfunc.lood_model") as mock_load:
+        patch("mlflow.pyfunc.load_model") as mock_load:
 
         client = MockClient.return_value
         client.search_model_versions.return_value = [fake_version]
@@ -59,5 +59,5 @@ def test_load_model_new_version_detected():
 
         manager.load_model()
     
-    assert manager.model is mock_load
+    assert manager.model is mock_model
     assert manager.current_version == "2"
