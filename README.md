@@ -16,11 +16,11 @@ Le projet s’articule autour de trois briques principales :
 
 Kedro est utilisé pour construire et orchestrer la pipeline Machine Learning, couvrant l’ensemble du cycle de vie du modèle, depuis l’acquisition des données jusqu’à l’évaluation finale.
 
-* La pipeline inclut les étapes suivantes :
+La pipeline inclut les étapes suivantes :
 
 * Récupération des données de consommation électrique en France
 
-* Nettoyage et pré-traitement des donnéess
+* Nettoyage et pré-traitement des données
 
 * Construction des jeux de données d’entraînement, de validation et de test
 
@@ -28,7 +28,7 @@ Kedro est utilisé pour construire et orchestrer la pipeline Machine Learning, c
 
 * Entraînement et évaluation du modèle
 
-* Production des artefacts de sortie
+* Production des artefacts de sortie pour *MLflow*
 
 #### **MLflow**
 
@@ -43,17 +43,17 @@ Les différentes exécutions de pipeline sont suivies via *MLflow* (outil de tra
 
 *FastAPI* est utilisée pour :
 
-* le chargement du modèle entraîné depuis MLflow
+* le chargement du modèle depuis MLflow
 
-* l’exposition du modèle via une API
+* l’exposition du modèle
 
-* la mise à disposition de routes de prédiction et de feedback utilisateur
+* la mise à disposition de routes de prédiction et de feedback
 
 ## **Installation**
 
 ### **Prérequis**
 
-Le projet nécessite les outils suivants :
+Le projet nécessite à minima les outils suivants :
 
 * **Python** ≥ 3.11
 * **Git** ≥ 2.39.5
@@ -89,7 +89,7 @@ Clonez le dépôt Git :
 
 ```bash
 git clone https://github.com/HassaniJawaheer/edf-forecasting.git
-cd edf_forecasting
+cd edf-forecasting
 ```
 
 ### **Installation de l’environnement et des dépendances**
@@ -99,14 +99,14 @@ Créer et synchroniser l’environnement :
 ```bash
 uv sync
 ```
-Cette commande crée un environnement virtuel isolé, installe l’ensemble des dépendances du projet et garantit la cohérence des versions utilisées.
+Cette commande crée un environnement virtuel isolé, installe l’ensemble des dépendances du projet.
 
-### **Tests""
+### **Tests**
 
 Lancez une pipeline simple:
 
 ```bash
-uv run kedro pipeline create hello_mlflow
+uv run kedro run --pipeline=hello_mlflow
 ```
 
 ## **Lancement**
@@ -117,7 +117,7 @@ Pour exécuter la pipeline complète d’entraînement et d’évaluation du mod
 uv run kedro run --pipeline=xgboost-timeseries
 ```
 
-Une fois la pipeline terminée et les artefacts produits, démarrer l’API de service du modèle :
+Une fois la pipeline terminée et les artefacts produits, démarrez l’API:
 
 ```bash
 uv run uvicorn src.edf_forecasting_api.main:app --reload --port 8000
