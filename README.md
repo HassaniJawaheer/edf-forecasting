@@ -1,101 +1,132 @@
 # edf-forecasting
 
-[![Powered by Kedro](https://img.shields.io/badge/powered_by-kedro-ffc900?logo=kedro)](https://kedro.org)
+> **Pipeline MLOps pour la prévision de la consommation électrique en France**
 
-## Overview
+## **Description**
 
-This is your new Kedro project, which was generated using `kedro 1.0.0`.
+### **Description générale**
 
-Take a look at the [Kedro documentation](https://docs.kedro.org) to get started.
+Ce projet vise à concevoir et mettre en place un **pipeline complet de Machine Learning** dédié à la **prévision de la consommation électrique en France**, à partir de données de consommation mesurées à un pas de temps infra-journalier (30 minutes).
 
-## Rules and guidelines
+### **Architecture fonctionnelle**
 
-In order to get the best out of the template:
+Le projet s’articule autour de trois briques principales :
 
-* Don't remove any lines from the `.gitignore` file we provide
-* Make sure your results can be reproduced by following a data engineering convention
-* Don't commit data to your repository
-* Don't commit any credentials or your local configuration to your repository. Keep all your credentials and local configuration in `conf/local/`
+#### **Kedro**
 
-## How to install dependencies
+Kedro est utilisé pour construire et orchestrer la pipeline Machine Learning, couvrant l’ensemble du cycle de vie du modèle, depuis l’acquisition des données jusqu’à l’évaluation finale.
 
-Declare any dependencies in `requirements.txt` for `pip` installation.
+* La pipeline inclut les étapes suivantes :
 
-To install them, run:
+* Récupération des données de consommation électrique en France
 
-```
-pip install -r requirements.txt
-```
+* Nettoyage et pré-traitement des donnéess
 
-## How to run your Kedro pipeline
+* Construction des jeux de données d’entraînement, de validation et de test
 
-You can run your Kedro project with:
+* Optimisation des hyperparamètres du modèle
 
-```
-kedro run
-```
+* Entraînement et évaluation du modèle
 
-## How to test your Kedro project
+* Production des artefacts de sortie
 
-Have a look at the file `tests/test_run.py` for instructions on how to write your tests. You can run your tests as follows:
+#### **MLflow**
 
-```
-pytest
-```
+Les différentes exécutions de pipeline sont suivies via *MLflow* (outil de tracking d’expériences).
 
-You can configure the coverage threshold in your project's `pyproject.toml` file under the `[tool.coverage.report]` section.
+* l’enregistrement des paramètres d’entraînement,
+* le suivi des métriques de performance,
+* la sauvegarde des modèles entraînés,
+* la comparaison des différentes versions de modèles.
 
+#### **FastAPI**
 
-## Project dependencies
+*FastAPI* est utilisée pour :
 
-To see and update the dependency requirements for your project use `requirements.txt`. You can install the project requirements with `pip install -r requirements.txt`.
+* le chargement du modèle entraîné depuis MLflow
 
-[Further information about project dependencies](https://docs.kedro.org/en/stable/kedro_project_setup/dependencies.html#project-specific-dependencies)
+* l’exposition du modèle via une API
 
-## How to work with Kedro and notebooks
+* la mise à disposition de routes de prédiction et de feedback utilisateur
 
-> Note: Using `kedro jupyter` or `kedro ipython` to run your notebook provides these variables in scope: `context`, 'session', `catalog`, and `pipelines`.
->
-> Jupyter, JupyterLab, and IPython are already included in the project requirements by default, so once you have run `pip install -r requirements.txt` you will not need to take any extra steps before you use them.
+## **Installation**
 
-### Jupyter
-To use Jupyter notebooks in your Kedro project, you need to install Jupyter:
+### **Prérequis**
 
-```
-pip install jupyter
-```
+Le projet nécessite les outils suivants :
 
-After installing Jupyter, you can start a local notebook server:
+* **Python** ≥ 3.11
+* **Git** ≥ 2.39.5
+* **uv** ≥ 0.6.12
 
-```
-kedro jupyter notebook
+### **Installation de `uv`**
+
+Executez la commande ci-dessous:
+
+```bash
+curl -Ls https://astral.sh/uv/install.sh | sh
 ```
 
-### JupyterLab
-To use JupyterLab, you need to install it:
+Rechargez le shell:
 
-```
-pip install jupyterlab
-```
-
-You can also start JupyterLab:
-
-```
-kedro jupyter lab
+```bash
+source ~/.bashrc
 ```
 
-### IPython
-And if you want to run an IPython session:
+Vérifiez l’installation :
 
+```bash
+uv --version
 ```
-kedro ipython
+
+**Voir la note d'installation ci-dessous**
+
+> [https://docs.astral.sh/uv/getting-started/installation/](https://docs.astral.sh/uv/getting-started/installation/)
+
+### **Récupération du projet**
+
+Clonez le dépôt Git :
+
+```bash
+git clone https://github.com/HassaniJawaheer/edf-forecasting.git
+cd edf_forecasting
 ```
 
-### How to ignore notebook output cells in `git`
-To automatically strip out all output cell contents before committing to `git`, you can use tools like [`nbstripout`](https://github.com/kynan/nbstripout). For example, you can add a hook in `.git/config` with `nbstripout --install`. This will run `nbstripout` before anything is committed to `git`.
+### **Installation de l’environnement et des dépendances**
 
-> *Note:* Your output cells will be retained locally.
+Créer et synchroniser l’environnement :
 
-## Package your Kedro project
+```bash
+uv sync
+```
+Cette commande crée un environnement virtuel isolé, installe l’ensemble des dépendances du projet et garantit la cohérence des versions utilisées.
 
-[Further information about building project documentation and packaging your project](https://docs.kedro.org/en/stable/tutorial/package_a_project.html)
+### **Tests""
+
+Lancez une pipeline simple:
+
+```bash
+uv run kedro pipeline create hello_mlflow
+```
+
+## **Lancement**
+
+Pour exécuter la pipeline complète d’entraînement et d’évaluation du modèle :
+
+```bash
+uv run kedro run --pipeline=xgboost-timeseries
+```
+
+Une fois la pipeline terminée et les artefacts produits, démarrer l’API de service du modèle :
+
+```bash
+uv run uvicorn src.edf_forecasting_api.main:app --reload --port 8000
+```
+
+Pour tester l’API :
+
+```bash
+python3 edf_forecasting_api/evaluate_model.py
+```
+
+Ce script exécute des requêtes de prédiction à partir de données de référence et envoie des feedbacks à l’API.
