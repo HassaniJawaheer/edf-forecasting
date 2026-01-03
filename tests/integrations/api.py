@@ -1,8 +1,6 @@
 from fastapi.testclient import TestClient
 from unittest.mock import patch, MagicMock
 from edf_forecasting_api.main import app
-import pytest
-pytestmark = pytest.mark.integration
 
 def test_contrat_predict():
     client = TestClient(app)

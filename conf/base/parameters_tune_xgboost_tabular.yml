@@ -11,7 +11,7 @@ preprocess:
 
 tune_xgboost_tabular:
   dir: "data/07_model_output/eco2mix/tabular/30min/xgboost/tuning/optuna/study"
-  n_trials: 500
+  n_trials: 50
   timeout: null
   seed: 42
   cv: 3

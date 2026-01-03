@@ -1,8 +1,6 @@
 from fastapi.testclient import TestClient
 from unittest.mock import patch
 from edf_forecasting_api.main import app
-import pytest
-pytestmark = pytest.mark.integration
 
 
 def test_api_startup_calls():

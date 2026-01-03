@@ -114,7 +114,7 @@ uv run kedro run --pipeline=hello_mlflow
 Pour exécuter la pipeline complète d’entraînement et d’évaluation du modèle :
 
 ```bash
-uv run kedro run --pipeline=xgboost-timeseries
+uv run kedro run --pipeline=xgboost_time_series
 ```
 
 Une fois la pipeline terminée et les artefacts produits, démarrez l’API:
