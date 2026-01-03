@@ -32,7 +32,7 @@ jobs:
 
       # Installation des dépendances
       - name: Install project dependencies
-        run: uv sync
+        run: uv sync --dev
 
       # Lancement des tests unitaires
       - name: Run unit tests
