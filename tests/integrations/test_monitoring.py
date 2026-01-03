@@ -1,7 +1,8 @@
 import pandas as pd
-import pytest
 from edf_forecasting_api.monitoring.ml_monitoring import flatten_predictions
 from edf_forecasting_api.monitoring.metrics_storage import MetricsStorage
+import pytest
+pytestmark = pytest.mark.integration
 
 
 def test_flatten_predictions():

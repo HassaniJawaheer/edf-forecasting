@@ -36,7 +36,7 @@ jobs:
 
       # Lancement des tests unitaires
       - name: Run unit tests
-        run: uv run python -m pytest tests
+        run: uv run python -m pytest tests -m "not integration"
 
       # Lancement d'une pipeline Kedro minimale
       - name: Run minimal Kedro pipeline
