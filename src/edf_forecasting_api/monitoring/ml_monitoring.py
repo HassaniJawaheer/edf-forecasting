@@ -84,6 +84,12 @@ def generate_monitoring_reports(storage: MetricsStorage):
 
     drift_metrics = json.loads(result_drift_report.json())
 
+    drift_score = next(
+        (m.get("value") for m in drift_metrics.get("metrics", [])
+         if "ValueDrift" in m.get("metric_id", "")),
+        None
+    )
+
     perf_metrics = None
     if not merged.empty:
         merged = merged[["target", "prediction"]].dropna().copy()
@@ -106,28 +112,38 @@ def generate_monitoring_reports(storage: MetricsStorage):
         "model_name": model_name,
         "model_version": str(model_version),
         "drift_report_path": drift_report_html_path,
-        "drift_score": next(m["value"] for m in drift_metrics["metrics"] if "ValueDrift" in m["metric_id"])
+        "drift_score": drift_score,
     }
 
     if perf_metrics:
-        perf_index = {m["metric_id"]: m["value"] for m in perf_metrics["metrics"]}
+        perf_index = {
+            m.get("metric_id"): m.get("value")
+            for m in perf_metrics.get("metrics", [])
+            if m.get("metric_id") is not None
+        }
+
         metrics.update({
-            "rmse": next((v for k, v in perf_index.items() if "RMSE" in k), None),
-            "mae": next((v["mean"] for k, v in perf_index.items() if "MAE" in k and isinstance(v, dict)), None),
-            "r2": next((v for k, v in perf_index.items() if "R2Score" in k), None),
+            "rmse": next((v for k, v in perf_index.items() if k and "RMSE" in k), None),
+            "mae": next(
+                (v["mean"] for k, v in perf_index.items()
+                 if k and "MAE" in k and isinstance(v, dict)),
+                None
+            ),
+            "r2": next((v for k, v in perf_index.items() if k and "R2Score" in k), None),
             "perf_report_path": perf_report_html_path,
         })
 
     storage.store_metrics(metrics)
     logging.info(f"Performance and Drift report generated at {run_dir}")
 
+    # ---- CORRECTION MLflow (point critique)
     with mlflow.start_run(run_name=f"monitoring_{timestamp}"):
         mlflow.log_artifact(run_dir, artifact_path="monitoring_reports")
         mlflow.log_metrics({
-            "drift_score": metrics["drift_score"],
-            "rmse": metrics.get("rmse", 0.0),
-            "mae": metrics.get("mae", 0.0),
-            "r2": metrics.get("r2", 0.0)
+            "drift_score": metrics.get("drift_score") or 0.0,
+            "rmse": metrics.get("rmse") or 0.0,
+            "mae": metrics.get("mae") or 0.0,
+            "r2": metrics.get("r2") or 0.0,
         })
         mlflow.set_tags({
             "model_name": model_name,
@@ -137,5 +153,5 @@ def generate_monitoring_reports(storage: MetricsStorage):
 
 def schedule_monitoring(storage):
     scheduler = BackgroundScheduler()
-    scheduler.add_job(lambda: generate_monitoring_reports(storage), "interval", seconds=500)
+    scheduler.add_job(lambda: generate_monitoring_reports(storage), "interval", seconds=50)
     scheduler.start()
