@@ -1,0 +1,45 @@
+name: CI EDF Forecasting
+
+on:
+  push:
+  pull_request:
+
+jobs:
+  build-and-test:
+    runs-on: ubuntu-latest
+
+    steps:
+      # Récupère le code
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      # Installe Python
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: "3.11"
+
+      # Vérifie la version de Python
+      - name: Check Python version
+        run: python --version
+
+      # Installation de uv
+      - name: Install uv
+        run: |
+          curl -Ls https://astral.sh/uv/install.sh | sh
+          echo "$HOME/.cargo/bin" >> $GITHUB_PATH
+          uv --version
+
+      # Installation des dépendances
+      - name: Install project dependencies
+        run: uv sync
+
+      # Lancement des tests unitaires
+      - name: Run unit tests
+        run: uv run pytest tests
+
+      # Lancement d'une pipeline Kedro minimale
+      - name: Run minimal Kedro pipeline
+        run: uv run kedro run --pipeline=hello_mlflow
+
+
