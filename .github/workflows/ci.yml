@@ -32,11 +32,11 @@ jobs:
 
       # Installation des dépendances
       - name: Install project dependencies
-        run: uv sync --dev
+        run: uv sync
 
       # Lancement des tests unitaires
       - name: Run unit tests
-        run: uv run pytest tests
+        run: uv run python -m pytest tests
 
       # Lancement d'une pipeline Kedro minimale
       - name: Run minimal Kedro pipeline
