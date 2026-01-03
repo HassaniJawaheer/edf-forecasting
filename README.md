@@ -1,5 +1,7 @@
 # edf-forecasting
 
+[![CI EDF Forecasting](https://github.com/HassaniJawaheer/edf-forecasting/actions/workflows/ci.yml/badge.svg)](https://github.com/HassaniJawaheer/edf-forecasting/actions/workflows/ci.yml)
+
 > **Pipeline MLOps pour la prévision de la consommation électrique en France**
 
 ## **Description**
@@ -55,7 +57,7 @@ Les différentes exécutions de pipeline sont suivies via *MLflow* (outil de tra
 
 Le projet nécessite à minima les outils suivants :
 
-* **Python** ≥ 3.11
+* **Python** ≥ 3.12
 * **Git** ≥ 2.39.5
 * **uv** ≥ 0.6.12
 
@@ -109,12 +111,23 @@ Lancez une pipeline simple:
 uv run kedro run --pipeline=hello_mlflow
 ```
 
+## **Continuous Integration**
+
+Une chaîne d’intégration continue est exécutée à chaque push et pull request.  
+Elle valide l’installation de l’environnement, l’exécution d'une pipeline de teste et les tests unitaires.
+
 ## **Lancement**
 
 Pour exécuter la pipeline complète d’entraînement et d’évaluation du modèle :
 
 ```bash
 uv run kedro run --pipeline=xgboost_time_series
+```
+
+Enuite, lancez le serveur MLflow :
+
+```bash
+uv run mlflow ui --backend-store-uri mlruns
 ```
 
 Une fois la pipeline terminée et les artefacts produits, démarrez l’API:
@@ -126,7 +139,7 @@ uv run uvicorn src.edf_forecasting_api.main:app --reload --port 8000
 Pour tester l’API :
 
 ```bash
-python3 edf_forecasting_api/evaluate_model.py
+.venv/bin/python src/edf_forecasting_api/evaluate_model.py
 ```
 
 Ce script exécute des requêtes de prédiction à partir de données de référence et envoie des feedbacks à l’API.
