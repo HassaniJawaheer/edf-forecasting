@@ -57,9 +57,83 @@ Les différentes exécutions de pipeline sont suivies via *MLflow* (outil de tra
 
 Le projet nécessite à minima les outils suivants :
 
-* **Python** ≥ 3.12
-* **Git** ≥ 2.39.5
-* **uv** ≥ 0.6.12
+Tested with:
+* **Python 3.12**
+* **Git 2.39.5**
+* **uv 0.6.12**
+* **Docker **28.2.1**
+* **kubectl 1.35.0**
+* **kind 0.32.0 (alpha)**
+
+### Installation de Docker
+
+Installer Docker Engine :
+
+```bash
+sudo apt update
+sudo apt install -y ca-certificates curl gnupg
+sudo install -m 0755 -d /etc/apt/keyrings
+curl -fsSL https://download.docker.com/linux/debian/gpg | sudo gpg --dearmor -o /etc/apt/keyrings/docker.gpg
+sudo chmod a+r /etc/apt/keyrings/docker.gpg
+
+echo \
+  "deb [arch=$(dpkg --print-architecture) signed-by=/etc/apt/keyrings/docker.gpg] \
+  https://download.docker.com/linux/debian \
+  $(. /etc/os-release && echo "$VERSION_CODENAME") stable" | \
+  sudo tee /etc/apt/sources.list.d/docker.list > /dev/null
+
+sudo apt update
+sudo apt install -y docker-ce docker-ce-cli containerd.io
+```
+Ajoutee l'utilisateur au groupe Docker :
+
+```bash
+sudo usermod -aG docker $USER
+newgrp docker
+```
+Petite vérification :
+
+```bash
+docker run hello-world
+```
+
+### **Installation de Kubernetes (kubectl et kind)**
+
+**IMPORTANT** : À installer uniquement après l’installation de Docker.
+
+#### Installer `kubectl` :
+
+```bash
+curl -LO https://dl.k8s.io/release/$(curl -L -s https://dl.k8s.io/release/stable.txt)/bin/linux/amd64/kubectl
+chmod +x kubectl
+sudo mv kubectl /usr/local/bin/
+```
+
+Vérification :
+
+```bash
+kubectl version --client
+```
+
+#### Installer `kind` :
+
+```bash
+curl -Lo kind https://kind.sigs.k8s.io/dl/latest/kind-linux-amd64
+chmod +x kind
+sudo mv kind /usr/local/bin/
+```
+
+Vérification :
+
+```bash
+kind version
+```
+
+#### Créer un cluster Kubernetes local :
+
+```bash
+kind create cluster --name mlops-local
+```
 
 ### **Installation de `uv`**
 
