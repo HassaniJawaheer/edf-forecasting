@@ -11,6 +11,7 @@ class MetricsStorage:
         """Create the SQLite table if it doesn't exist."""
         conn = sqlite3.connect(self.db_path)
         cursor = conn.cursor()
+
         cursor.execute("""
         CREATE TABLE IF NOT EXISTS performance_metrics (
             timestamp TEXT PRIMARY KEY,
@@ -20,20 +21,49 @@ class MetricsStorage:
             rmse REAL,
             r2 REAL,
             drift_score REAL,
+            status TEXT,
             drift_report_path TEXT,
             perf_report_path TEXT
         )
         """)
+
         conn.commit()
         conn.close()
 
     def store_metrics(self, metrics: dict):
-        """Insert a new metrics record."""
+        """
+        Insert a new metrics record.
+        One row = one monitoring snapshot (cumulative over time).
+        """
         conn = sqlite3.connect(self.db_path)
         cursor = conn.cursor()
+
         cursor.execute("""
-        INSERT INTO performance_metrics (timestamp, model_name, model_version, mae, rmse, r2, drift_score, drift_report_path, perf_report_path)
-        VALUES (:timestamp, :model_name, :model_version, :mae, :rmse, :r2, :drift_score, :drift_report_path, :perf_report_path)
+        INSERT INTO performance_metrics (
+            timestamp,
+            model_name,
+            model_version,
+            mae,
+            rmse,
+            r2,
+            drift_score,
+            status,
+            drift_report_path,
+            perf_report_path
+        )
+        VALUES (
+            :timestamp,
+            :model_name,
+            :model_version,
+            :mae,
+            :rmse,
+            :r2,
+            :drift_score,
+            :status,
+            :drift_report_path,
+            :perf_report_path
+        )
         """, metrics)
+
         conn.commit()
         conn.close()

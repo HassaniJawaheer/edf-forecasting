@@ -7,18 +7,21 @@ import mlflow
 from datetime import datetime
 from evidently import Dataset, Report, DataDefinition, Regression
 from evidently.presets import DataDriftPreset, RegressionPreset
-from apscheduler.schedulers.background import BackgroundScheduler
 from src.edf_forecasting_api.monitoring.metrics_storage import MetricsStorage
 
-mlflow.set_tracking_uri("http://127.0.0.1:5000")
-mlflow.set_experiment("edf_forecasting_monitoring")
-
-LOG_DIR = "src/logs"
-REFERENCE_DRIFT = "./data/03_primary/eco2mix/definitive/30min/checked/reference/reference_data_drift.csv"
-REFERENCE_PERF = "./data/03_primary/eco2mix/definitive/30min/checked/reference/reference_data_perf.csv"
+TRACKING_URI = os.getenv("TRACKING_URI", "http://127.0.0.1:5000")
+REPORT_DIR = os.getenv("REPORT_DIR", "src/reports")
+LOG_DIR = os.getenv("LOG_DIR", "src/logs")
+REFERENCE_DRIFT = os.getenv("REFERENCE_DRIFT", "./data/03_primary/eco2mix/definitive/30min/checked/reference/reference_data_drift.csv")
+REFERENCE_PERF = os.getenv("REFERENCE_PERF", "./data/03_primary/eco2mix/definitive/30min/checked/reference/reference_data_perf.csv")
 PREDICTION_LOG = os.path.join(LOG_DIR, "predictions.jsonl")
 FEEDBACK_LOG = os.path.join(LOG_DIR, "ground_truth.jsonl")
-REPORT_DIR = "src/reports"
+DRIFT_CRITICAL_THRESHOLD = float(os.getenv("DRIFT_CRITICAL_THRESHOLD", "0.5"))
+RMSE_WARNING_THRESHOLD = float(os.getenv("RMSE_WARNING_THRESHOLD", "1000"))
+
+
+mlflow.set_tracking_uri(TRACKING_URI)
+mlflow.set_experiment("edf_forecasting_monitoring")
 
 os.makedirs(REPORT_DIR, exist_ok=True)
 
@@ -44,6 +47,14 @@ def flatten_predictions(df):
                 })
                 rows.append(entry)
     return pd.DataFrame(rows)
+
+def compute_status(drift_score, rmse):
+    if drift_score is not None and drift_score > DRIFT_CRITICAL_THRESHOLD:
+        return "DEGRADED"
+    if rmse is not None and rmse > RMSE_WARNING_THRESHOLD:
+        return "WARNING"
+    return "OK"
+
 
 def generate_monitoring_reports(storage: MetricsStorage):
     latest_ref_drift = get_latest_versioned_file(REFERENCE_DRIFT)
@@ -115,6 +126,7 @@ def generate_monitoring_reports(storage: MetricsStorage):
         "drift_score": drift_score,
     }
 
+
     if perf_metrics:
         perf_index = {
             m.get("metric_id"): m.get("value")
@@ -132,11 +144,18 @@ def generate_monitoring_reports(storage: MetricsStorage):
             "r2": next((v for k, v in perf_index.items() if k and "R2Score" in k), None),
             "perf_report_path": perf_report_html_path,
         })
+        
+    status = compute_status(
+        metrics.get("drift_score"),
+        metrics.get("rmse")
+    )
+    metrics["status"] = status
+
 
     storage.store_metrics(metrics)
     logging.info(f"Performance and Drift report generated at {run_dir}")
 
-    # ---- CORRECTION MLflow (point critique)
+    # ---- CORRECTION MLflow
     with mlflow.start_run(run_name=f"monitoring_{timestamp}"):
         mlflow.log_artifact(run_dir, artifact_path="monitoring_reports")
         mlflow.log_metrics({
@@ -150,8 +169,3 @@ def generate_monitoring_reports(storage: MetricsStorage):
             "model_version": str(model_version),
             "timestamp": timestamp
         })
-
-def schedule_monitoring(storage):
-    scheduler = BackgroundScheduler()
-    scheduler.add_job(lambda: generate_monitoring_reports(storage), "interval", seconds=50)
-    scheduler.start()

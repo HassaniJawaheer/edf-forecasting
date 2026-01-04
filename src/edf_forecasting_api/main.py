@@ -8,13 +8,14 @@ from contextlib import asynccontextmanager
 from edf_forecasting_api.schema import InputData, FeedbackData
 from edf_forecasting_api.model_manager import ModelManager
 from edf_forecasting_api.logger_utils import log_feedback, log_predictions
-from edf_forecasting_api.monitoring.ml_monitoring import schedule_monitoring
-from src.edf_forecasting_api.monitoring.metrics_storage import MetricsStorage
 logging.basicConfig(level=logging.INFO, format="%(asctime)s [%(levelname)s] %(message)s")
 
+# Variable name
+MODEL_NAME = os.getenv("MODEL_NAME", "timeseries_xgboost_30min")
+MODEL_CHECK_INTERVAL = int(os.getenv("MODEL_CHECK_INTERVAL", "300"))
 
 # Create a manager model instance
-model_manager = ModelManager(model_name="timeseries_xgboost_30min", check_interval=500)
+model_manager = ModelManager(model_name=MODEL_NAME, check_interval=MODEL_CHECK_INTERVAL)
 
 # FastAPI's lifespan context to handle startup and shutdown tasks
 @asynccontextmanager
@@ -23,11 +24,6 @@ async def lifespan(app: FastAPI):
     model_manager.load_model()
     model_manager.start_watcher()
     logging.info("Model monitoring enabled.")
-
-    # Performance monitoring
-    METRICS_DB = "src/reports/db/metrics.db"
-    storage = MetricsStorage(METRICS_DB)
-    schedule_monitoring(storage)
 
     yield
 
