@@ -5,9 +5,9 @@ from fastapi import FastAPI
 from prometheus_fastapi_instrumentator import Instrumentator
 from fastapi.responses import FileResponse, JSONResponse
 from contextlib import asynccontextmanager
-from edf_forecasting_api.schema import InputData, FeedbackData
-from edf_forecasting_api.model_manager import ModelManager
-from edf_forecasting_api.logger_utils import log_feedback, log_predictions
+from src.edf_forecasting_api.schema import InputData, FeedbackData
+from src.edf_forecasting_api.model_manager import ModelManager
+from src.edf_forecasting_api.logger_utils import log_feedback, log_predictions
 logging.basicConfig(level=logging.INFO, format="%(asctime)s [%(levelname)s] %(message)s")
 
 # Variable name

@@ -7,7 +7,7 @@ import mlflow
 from datetime import datetime
 from evidently import Dataset, Report, DataDefinition, Regression
 from evidently.presets import DataDriftPreset, RegressionPreset
-from src.edf_forecasting_api.monitoring.metrics_storage import MetricsStorage
+from src.monitoring.metrics_storage import MetricsStorage
 
 TRACKING_URI = os.getenv("TRACKING_URI", "http://127.0.0.1:5000")
 REPORT_DIR = os.getenv("REPORT_DIR", "src/reports")
@@ -155,7 +155,6 @@ def generate_monitoring_reports(storage: MetricsStorage):
     storage.store_metrics(metrics)
     logging.info(f"Performance and Drift report generated at {run_dir}")
 
-    # ---- CORRECTION MLflow
     with mlflow.start_run(run_name=f"monitoring_{timestamp}"):
         mlflow.log_artifact(run_dir, artifact_path="monitoring_reports")
         mlflow.log_metrics({
