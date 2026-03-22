@@ -1,9 +1,11 @@
-import mlflow
 import logging
 import threading
 import numpy as np
 from typing import List
 import time
+import mlflow, os
+
+mlflow.set_tracking_uri(os.getenv("MLFLOW_TRACKING_URI", "file:/.mlruns"))
 
 class ModelManager:
     def __init__(self, model_name: str, check_interval: int = 300):

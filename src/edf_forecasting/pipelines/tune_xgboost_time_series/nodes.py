@@ -6,7 +6,6 @@ import numpy as np
 import mlflow
 from edf_forecasting.components.eco2mix_tune_xgboost import XGBoostTuner
 
-
 def create_windows(df_data, params):
     """Create sliding windows of 48 half-hours from the training dataset."""
     df = df_data.copy()

@@ -6,7 +6,6 @@ generated using Kedro 1.0.0
 from kedro.pipeline import node, Pipeline, pipeline
 from .nodes import train, calibrate, evaluate
 
-
 def create_pipeline(**kwargs) -> Pipeline:
     return pipeline([
         node(
