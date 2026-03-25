@@ -12,8 +12,4 @@ RUN pip install --no-cache-dir --upgrade pip \
 
 EXPOSE 5000
 
-CMD mlflow server \
-    --backend-store-uri sqlite:///mlflow.db \
-    --artifacts-destination s3://mlflow-artifacts \
-    --host 0.0.0.0 \
-    --port 5000
+CMD ["mlflow", "server", "--backend-store-uri", "sqlite:////mlflow/data/mlflow.db", "--artifacts-destination", "s3://mlflow-artifacts", "--host", "0.0.0.0", "--port", "5000"]
