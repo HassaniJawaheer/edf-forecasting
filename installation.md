@@ -182,3 +182,21 @@ git remote add origin git@github.com:HassaniJawaheer/edf-forecasting.git
 git push -u origin main
 # -u crée un lien entre ta branche locale et distante
 ```
+
+# Commande lancement conteneurs docker
+lancer minio 
+
+```bash 
+docker run -d \
+  --name minio \
+  --network edf-forecasting \
+  -p 9000:9000 \
+  -p 9001:9001 \
+  --env-file .env \
+  -v minio-data:/data \
+  minio/minio server /data --console-address ":9001"
+```
+## build une image mlflow
+```bash
+docker build -t edf-mlflow -f app/mlflow/Dockerfile .
+```
