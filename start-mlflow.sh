@@ -3,5 +3,5 @@ docker run -d \
   --network edf-forecasting \
   -p 5000:5000 \
   --env-file .env \
-  -v mlflow-data:/mlflow/data \
-  edf-mlflow
+  -v $(pwd)/mlflow-server/mlflow-data:/mlflow/data \
+  edf-forecasting-mlflow

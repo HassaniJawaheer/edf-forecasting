@@ -198,5 +198,16 @@ docker run -d \
 ```
 ## build une image mlflow
 ```bash
-docker build -t edf-mlflow -f app/mlflow/Dockerfile .
+docker build -t edf-forecasting-mlflow -f app/mlflow/Dockerfile .
 ```
+## Quelques commnandes docker
+### vérifie les réseaux docker dispon ible
+`docker network ls`
+### vérifier un réseaux précis
+`docker network inspect edf-forecasting`
+### vérifier les images présents
+`docker images`
+### vérifier les volumes
+`docker volume ls`
+### Vérifier les logs
+`docker logs minio`
