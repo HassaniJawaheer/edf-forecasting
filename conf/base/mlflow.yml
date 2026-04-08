@@ -1,5 +1,5 @@
 server:
-  mlflow_tracking_uri: mlruns
+  mlflow_tracking_uri: http://localhost:5000
 
 tracking:
   experiment:

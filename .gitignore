@@ -168,3 +168,6 @@ mlruns/*
 
 # mlflow arti
 mlartifacts/*
+
+# .db
+*.db
