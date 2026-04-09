@@ -211,3 +211,18 @@ docker build -t edf-forecasting-mlflow -f app/mlflow/Dockerfile .
 `docker volume ls`
 ### Vérifier les logs
 `docker logs minio`
+
+
+## MLflow / Kedro – note rapide
+
+Ne pas perdre de temps : **conf/local > conf/base**.
+
+Même si `conf/base/mlflow.yml` est correct, un `null` dans `conf/local/mlflow.yml` écrase tout → fallback sur `mlruns`.
+
+👉 Toujours définir dans `conf/local/mlflow.yml` :
+
+```yaml
+server:
+  mlflow_tracking_uri: http://localhost:5000
+````
+
