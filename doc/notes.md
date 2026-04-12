@@ -228,5 +228,5 @@ server:
 
 ## Lancer le conteneurs api: 
 ```bash
-docker run -d --name edf-forecasting-api --network edf-forecasting -p 8000:8000 --env-file .env edf-forecasting-api
+docker run -d --name edf-forecasting-api --network edf-forecasting -p 8000:8000 --env-file .env -v $(pwd)/src/logs:/app/src/logs edf-forecasting-api
 ```

@@ -2,12 +2,12 @@ import os
 import json
 from datetime import datetime
 
-LOG_DIR = "src/logs"
+LOG_DIR = os.getenv("LOG_DIR", "src/logs")
 PREDICTION_LOG_FILE = os.path.join(LOG_DIR, "predictions.jsonl")
 FEEDBACK_LOG_FILE = os.path.join(LOG_DIR, "ground_truth.jsonl")
 
 # Create logs directory if do not exist
-os.makedirs(LOG_DIR, exist_ok=True)
+#os.makedirs(LOG_DIR, exist_ok=True)
 
 
 def log_predictions(inputs, outputs, model_name, model_version, n_predictions, prediction_id):
