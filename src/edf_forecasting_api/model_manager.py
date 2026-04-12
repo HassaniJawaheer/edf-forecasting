@@ -5,7 +5,8 @@ from typing import List
 import time
 import mlflow, os
 
-mlflow.set_tracking_uri(os.getenv("MLFLOW_TRACKING_URI", "file:/.mlruns"))
+# Mlflow tracker
+mlflow.set_tracking_uri(os.getenv("MLFLOW_TRACKING_URI", "http://mlflow-server:5000"))
 
 class ModelManager:
     def __init__(self, model_name: str, check_interval: int = 300):

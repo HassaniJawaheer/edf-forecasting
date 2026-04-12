@@ -7,16 +7,12 @@ from fastapi.responses import FileResponse, JSONResponse
 from contextlib import asynccontextmanager
 from src.edf_forecasting_api.schema import InputData, FeedbackData
 from src.edf_forecasting_api.model_manager import ModelManager
-import mlflow
 from src.edf_forecasting_api.logger_utils import log_feedback, log_predictions
 logging.basicConfig(level=logging.INFO, format="%(asctime)s [%(levelname)s] %(message)s")
 
 # Variable name
 MODEL_NAME = os.getenv("MODEL_NAME", "timeseries_xgboost_30min")
 MODEL_CHECK_INTERVAL = int(os.getenv("MODEL_CHECK_INTERVAL", "300"))
-
-# MLflow tracker
-mlflow.set_tracking_uri(os.getenv("TRACKING_URI"))
 
 # Create a manager model instance
 model_manager = ModelManager(model_name=MODEL_NAME, check_interval=MODEL_CHECK_INTERVAL)

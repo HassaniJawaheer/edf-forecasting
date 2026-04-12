@@ -224,5 +224,9 @@ Même si `conf/base/mlflow.yml` est correct, un `null` dans `conf/local/mlflow.y
 ```yaml
 server:
   mlflow_tracking_uri: http://localhost:5000
-````
+```
 
+## Lancer le conteneurs api: 
+```bash
+docker run -d --name edf-forecasting-api --network edf-forecasting -p 8000:8000 --env-file .env edf-forecasting-api
+```
