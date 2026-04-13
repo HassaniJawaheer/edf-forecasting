@@ -62,7 +62,7 @@ def simulate_predictions_and_feedbacks(df: pd.DataFrame, target_col="Consommatio
 if __name__ == "__main__":
     logging.basicConfig(level=logging.INFO, format="%(asctime)s [%(levelname)s] %(message)s")
 
-    data = read_df(path="./src/edf_forecasting_api/data/eCO2mix_RTE_Annuel-Definitif_2023.xls")
+    data = read_df(path="./edf_forecasting_api/data/eCO2mix_RTE_Annuel-Definitif_2023.xls")
     data = data.dropna(subset=["Consommation"]).reset_index(drop=True)
   
     results_df, feedbacks = simulate_predictions_and_feedbacks(data, target_col="Consommation", limit=None)
