@@ -230,3 +230,24 @@ server:
 ```bash
 docker run -d --name edf-forecasting-api --network edf-forecasting -p 8000:8000 --env-file .env -v $(pwd)/src/logs:/app/src/logs edf-forecasting-api
 ```
+
+## Monitoring technique vs monitoring modèle
+
+Ajout d’une stack de monitoring technique avec Prometheus + Grafana.  
+L’API expose déjà ses métriques via `prometheus-fastapi-instrumentator` (`/metrics`).  
+Prometheus scrape ces métriques et les stocke, Grafana les visualise (latence, requêtes, erreurs, etc.).
+
+En parallèle, mise en place d’un monitoring modèle (Evidently + métriques métier type RMSE, R²).  
+Important : Evidently n’est pas fait uniquement pour générer des HTML. Il peut produire directement des métriques sous forme de dict/JSON.
+
+Choix retenu :
+- abandon du HTML (trop lourd, pas exploitable automatiquement)
+- utilisation des sorties JSON/dict d’Evidently
+- stockage des métriques dans SQLite via `MetricStorage`
+
+Architecture finale :
+- API → expose `/metrics` (monitoring technique)
+- Prometheus → scrape et stocke les métriques API
+- Grafana → visualisation des métriques techniques
+- Monitoring service → calcule métriques modèle (Evidently)
+- SQLite → stockage historisé des métriques modèle
