@@ -251,3 +251,9 @@ Architecture finale :
 - Grafana → visualisation des métriques techniques
 - Monitoring service → calcule métriques modèle (Evidently)
 - SQLite → stockage historisé des métriques modèle
+
+### Lancer prometheus:
+
+```bash
+docker run -d --name prometheus --network edf-forecasting -p 9090:9090 -v $(pwd)/app/prometheus/prometheus.yml:/etc/prometheus/prometheus.yml -v prometheus-data:/prometheus prom/prometheus
+```

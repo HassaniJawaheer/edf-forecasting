@@ -34,8 +34,8 @@ async def lifespan(app: FastAPI):
 app = FastAPI(title="Consumption Forecasting API", lifespan=lifespan)
 
 # Expose Prometheus metrics for API monitoring
-Instrumentator = Instrumentator().instrument(app=app)
-Instrumentator.expose(app)
+instrumentator = Instrumentator().instrument(app=app)
+instrumentator.expose(app)
 
 @app.get("/")
 def root():
