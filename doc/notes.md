@@ -257,3 +257,8 @@ Architecture finale :
 ```bash
 docker run -d --name prometheus --network edf-forecasting -p 9090:9090 -v $(pwd)/app/prometheus/prometheus.yml:/etc/prometheus/prometheus.yml -v prometheus-data:/prometheus prom/prometheus
 ```
+### Lancer grafana:
+
+```bash
+docker run -d --name grafana --network edf-forecasting -p 3000:3000 grafana/grafana
+```
