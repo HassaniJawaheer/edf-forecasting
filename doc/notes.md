@@ -262,3 +262,7 @@ docker run -d --name prometheus --network edf-forecasting -p 9090:9090 -v $(pwd)
 ```bash
 docker run -d --name grafana --network edf-forecasting -p 3000:3000 grafana/grafana
 ```
+### Lancer le contenneur monitoring
+```bash
+docker run -d --name edf-forecasting-monitoring --network edf-forecasting --env-file .env -v $(pwd)/data/03_primary/eco2mix:/app/data/03_primary/eco2mix -v $(pwd)/src/logs:/app/src/logs -v $(pwd)/src/reports/db:/app/src/reports/db edf-forecasting-monitoring
+```

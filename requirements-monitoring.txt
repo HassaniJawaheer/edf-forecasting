@@ -1,6 +1,4 @@
 pandas
-numpy
-mlflow
 evidently
 apscheduler
 tabulate

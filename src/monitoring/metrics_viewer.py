@@ -8,7 +8,7 @@ def view_metrics(limit=10):
     conn = sqlite3.connect(DB_PATH)
     cursor = conn.cursor()
     cursor.execute("""
-        SELECT timestamp, model_name, model_version, mae, rmse, r2, drift_score, drift_report_path, perf_report_path
+        SELECT timestamp, model_name, model_version, mae, rmse, r2, drift_score
         FROM performance_metrics
         ORDER BY timestamp DESC
         LIMIT ?
@@ -20,7 +20,7 @@ def view_metrics(limit=10):
         logging.info("No metrics found in the database")
         return
     
-    headers = ["Timestamp", "Model", "Version", "MAE", "RMSE", "r2", "Drift", "Drift report", "Perf report"]
+    headers = ["Timestamp", "Model", "Version", "MAE", "RMSE", "r2", "Drift"]
     print(tabulate(rows, headers=headers))
 
 if __name__ == "__main__":

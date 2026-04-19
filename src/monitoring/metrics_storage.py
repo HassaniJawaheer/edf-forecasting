@@ -21,9 +21,7 @@ class MetricsStorage:
             rmse REAL,
             r2 REAL,
             drift_score REAL,
-            status TEXT,
-            drift_report_path TEXT,
-            perf_report_path TEXT
+            status TEXT
         )
         """)
 
@@ -47,9 +45,7 @@ class MetricsStorage:
             rmse,
             r2,
             drift_score,
-            status,
-            drift_report_path,
-            perf_report_path
+            status
         )
         VALUES (
             :timestamp,
@@ -59,9 +55,7 @@ class MetricsStorage:
             :rmse,
             :r2,
             :drift_score,
-            :status,
-            :drift_report_path,
-            :perf_report_path
+            :status
         )
         """, metrics)
 
