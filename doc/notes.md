@@ -103,6 +103,7 @@ curl -X POST "http://127.0.0.1:8000/predict" \
        ],
        "n_predictions": 48
      }'
+```
 
 # Autre chose 
 curl -X POST "http://127.0.0.1:8000/predict" \

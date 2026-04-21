@@ -2,72 +2,27 @@
 
 [![CI EDF Forecasting](https://github.com/HassaniJawaheer/edf-forecasting/actions/workflows/ci.yml/badge.svg)](https://github.com/HassaniJawaheer/edf-forecasting/actions/workflows/ci.yml)
 
-> **Pipeline MLOps pour la prévision de la consommation électrique en France**
+> **MLOps pipeline for forecasting electricity consumption in France**
 
 ## **Description**
+This project aims to build an Electricity Consumption Forecasting API using EDF (Electricité de France) data.
 
-### **Description générale**
-
-Ce projet vise à concevoir et mettre en place un **pipeline complet de Machine Learning** dédié à la **prévision de la consommation électrique en France**, à partir de données de consommation mesurées à un pas de temps infra-journalier (30 minutes).
-
-### **Architecture fonctionnelle**
-
-Le projet s’articule autour de trois briques principales :
-
-#### **Kedro**
-
-Kedro est utilisé pour construire et orchestrer la pipeline Machine Learning, couvrant l’ensemble du cycle de vie du modèle, depuis l’acquisition des données jusqu’à l’évaluation finale.
-
-La pipeline inclut les étapes suivantes :
-
-* Récupération des données de consommation électrique en France
-
-* Nettoyage et pré-traitement des données
-
-* Construction des jeux de données d’entraînement, de validation et de test
-
-* Optimisation des hyperparamètres du modèle
-
-* Entraînement et évaluation du modèle
-
-* Production des artefacts de sortie pour *MLflow*
-
-#### **MLflow**
-
-Les différentes exécutions de pipeline sont suivies via *MLflow* (outil de tracking d’expériences).
-
-* l’enregistrement des paramètres d’entraînement,
-* le suivi des métriques de performance,
-* la sauvegarde des modèles entraînés,
-* la comparaison des différentes versions de modèles.
-
-#### **FastAPI**
-
-*FastAPI* est utilisée pour :
-
-* le chargement du modèle depuis MLflow
-
-* l’exposition du modèle
-
-* la mise à disposition de routes de prédiction et de feedback
+## **Architecture**
+The system is composed of several Dockerized services, each with a specific role. A **FastAPI-based** inference API serves predictions and logs both prediction data and user feedback. Model performance and system metrics are monitored using **Prometheus** and **Grafana**, while model performance and data drift are tracked using **Evidently AI**, executed periodically with a scheduler. Model training is handled by an offline training pipeline (with **Kedro**) running outside of Docker. **MLflow** is used for experiment tracking and model registry, and the API automatically loads the latest production model from MLflow. All artifacts, including trained models, are stored in **MinIO**.
 
 ## **Installation**
 
-### **Prérequis**
-
-Le projet nécessite à minima les outils suivants :
+### Prerequisites
 
 Tested with:
 * **Python 3.12**
 * **Git 2.39.5**
 * **uv 0.6.12**
-* **Docker **28.2.1**
-* **kubectl 1.35.0**
-* **kind 0.32.0 (alpha)**
+* **Docker 28.2.1**
 
-### Installation de Docker
+### Docker installation
 
-Installer Docker Engine :
+Install Docker Engine :
 
 ```bash
 sudo apt update
@@ -85,135 +40,243 @@ echo \
 sudo apt update
 sudo apt install -y docker-ce docker-ce-cli containerd.io
 ```
-Ajoutee l'utilisateur au groupe Docker :
+Add user to docker group:
 
 ```bash
 sudo usermod -aG docker $USER
 newgrp docker
 ```
-Petite vérification :
+Verification :
 
 ```bash
 docker run hello-world
 ```
 
-### **Installation de Kubernetes (kubectl et kind)**
+### `uv` installation
 
-**IMPORTANT** : À installer uniquement après l’installation de Docker.
-
-#### Installer `kubectl` :
-
-```bash
-curl -LO https://dl.k8s.io/release/$(curl -L -s https://dl.k8s.io/release/stable.txt)/bin/linux/amd64/kubectl
-chmod +x kubectl
-sudo mv kubectl /usr/local/bin/
-```
-
-Vérification :
-
-```bash
-kubectl version --client
-```
-
-#### Installer `kind` :
-
-```bash
-curl -Lo kind https://kind.sigs.k8s.io/dl/latest/kind-linux-amd64
-chmod +x kind
-sudo mv kind /usr/local/bin/
-```
-
-Vérification :
-
-```bash
-kind version
-```
-
-#### Créer un cluster Kubernetes local :
-
-```bash
-kind create cluster --name mlops-local
-```
-
-### **Installation de `uv`**
-
-Executez la commande ci-dessous:
+Execute the command below:
 
 ```bash
 curl -Ls https://astral.sh/uv/install.sh | sh
 ```
 
-Rechargez le shell:
+Reload the shell:
 
 ```bash
 source ~/.bashrc
 ```
 
-Vérifiez l’installation :
+Verify installation:
 
 ```bash
 uv --version
 ```
 
-**Voir la note d'installation ci-dessous**
+**See the installation note below**
 
 > [https://docs.astral.sh/uv/getting-started/installation/](https://docs.astral.sh/uv/getting-started/installation/)
 
-### **Récupération du projet**
+### **Copy the projet**
 
-Clonez le dépôt Git :
+Clone the Git repository :
 
 ```bash
 git clone https://github.com/HassaniJawaheer/edf-forecasting.git
 cd edf-forecasting
 ```
 
-### **Installation de l’environnement et des dépendances**
+### **Environment and dependencies setup**
 
-Créer et synchroniser l’environnement :
+Set up and synchronize the environment :
 
 ```bash
 uv sync
 ```
-Cette commande crée un environnement virtuel isolé, installe l’ensemble des dépendances du projet.
-
-### **Tests**
-
-Lancez une pipeline simple:
+Run a simple kedro pipeline:
 
 ```bash
 uv run kedro run --pipeline=hello_mlflow
 ```
 
-## **Continuous Integration**
+### Run the Docker services
 
-Une chaîne d’intégration continue est exécutée à chaque push et pull request.  
-Elle valide l’installation de l’environnement, l’exécution d'une pipeline de teste et les tests unitaires.
+First, create a Docker network named `edf-forecasting`.
 
-## **Lancement**
+```bash
+docker network create edf-forecasting
+```
 
-Pour exécuter la pipeline complète d’entraînement et d’évaluation du modèle :
+#### Start MinIO
+
+```bash
+docker run -d \
+  --name minio \
+  --network edf-forecasting \
+  -p 9000:9000 \
+  -p 9001:9001 \
+  --env-file .env \
+  -v minio-data:/data \
+  minio/minio server /data --console-address ":9001"
+```
+
+#### Build MLflow image
+
+```bash
+docker build -t edf-forecasting-mlflow -f app/mlflow/Dockerfile .
+```
+
+#### Start MLflow container
+
+```bash
+docker run -d \
+  --name mlflow-server \
+  --network edf-forecasting \
+  -p 5000:5000 \
+  --env-file .env \
+  -v $(pwd)/mlflow-server/mlflow-data:/mlflow/data \
+  edf-forecasting-mlflow
+```
+
+#### Build API image
+
+```bash
+docker build -t edf-forecasting-api -f app/api/Dockerfile .
+```
+
+#### Build monitoring image
+
+```bash
+docker build -t edf-forecasting-monitoring -f app/monitoring/Dockerfile .
+```
+
+### Start monitoring container
+
+```bash
+docker run -d \
+  --name edf-forecasting-monitoring \
+  --network edf-forecasting \
+  --env-file .env \
+  -v $(pwd)/data/03_primary/eco2mix:/app/data/03_primary/eco2mix \
+  -v $(pwd)/src/logs:/app/src/logs \
+  -v $(pwd)/src/reports/db:/app/src/reports/db \
+  edf-forecasting-monitoring
+```
+
+### Start Prometheus
+
+```bash
+docker run -d \
+  --name prometheus \
+  --network edf-forecasting \
+  -p 9090:9090 \
+  -v $(pwd)/app/prometheus/prometheus.yml:/etc/prometheus/prometheus.yml \
+  -v prometheus-data:/prometheus \
+  prom/prometheus
+```
+
+### Start Grafana
+
+```bash
+docker run -d \
+  --name grafana \
+  --network edf-forecasting \
+  -p 3000:3000 \
+  grafana/grafana
+```
+
+### MLflow / Kedro note
+
+`conf/local` has priority over `conf/base`.
+
+If `conf/local/mlflow.yml` contains `null`, it can override the correct value from `conf/base` and fall back to the default `mlruns` directory.
+
+Always define:
+
+```yaml
+server:
+  mlflow_tracking_uri: http://localhost:5000
+```
+
+in `conf/local/mlflow.yml`.
+
+### Monitoring overview
+
+The project uses two monitoring layers:
+
+* **Technical monitoring** with Prometheus and Grafana
+* **Model monitoring** with Evidently AI and SQLite
+
+## **Run the training pipeline**
 
 ```bash
 uv run kedro run --pipeline=xgboost_time_series
 ```
 
-Enuite, lancez le serveur MLflow :
+### Check experiments in MLflow
+
+Open MLflow UI:
+
+[http://localhost:5000](http://localhost:5000)
+
+* Go to **Experiments**
+* Open `edf_forecasting`
+* Check that the run completed successfully
+
+### Promote the model to Production
+
+* Go to **Models**
+* Select `timeseries_xgboost_30min`
+* Open the latest version
+* Set stage to **Production**
+
+## **Start the API container**
+
+Once the model is in Production, start the API:
 
 ```bash
-uv run mlflow ui --backend-store-uri mlruns
+docker run -d \
+  --name edf-forecasting-api \
+  --network edf-forecasting \
+  -p 8000:8000 \
+  --env-file .env \
+  -v $(pwd)/src/logs:/app/src/logs \
+  edf-forecasting-api
 ```
 
-Une fois la pipeline terminée et les artefacts produits, démarrez l’API:
+## **Test the API**
+
+You can send a request using `curl`:
 
 ```bash
-uv run uvicorn src.edf_forecasting_api.main:app --reload --port 8000
+curl -X POST "http://127.0.0.1:8000/predict" \
+     -H "Content-Type: application/json" \
+     -d '{
+       "features": [
+         [
+           74494.0, 73481.0, 71506.0, 71505.0, 71134.0, 70856.0, 68840.0, 67315.0,
+           65749.0, 64838.0, 64041.0, 64379.0, 64210.0, 64469.0, 64437.0, 64559.0,
+           64785.0, 64281.0, 64292.0, 64862.0, 65353.0, 65879.0, 66180.0, 66643.0,
+           66901.0, 67719.0, 68547.0, 66745.0, 65090.0, 63891.0, 62228.0, 61554.0,
+           61263.0, 61469.0, 62443.0, 65700.0, 68890.0, 70497.0, 71766.0, 72562.0,
+           72184.0, 71493.0, 70440.0, 69167.0, 68044.0, 68829.0, 71485.0, 70639.0
+         ]
+       ],
+       "n_predictions": 48
+     }'
 ```
 
-Pour tester l’API :
+### Parameters
 
-```bash
-.venv/bin/python src/edf_forecasting_api/evaluate_model.py
-```
+* **features**: input time series
+  Each list represents electricity consumption values over one day, with a 30-minute frequency (48 values from 00:00 to 23:30).
 
-Ce script exécute des requêtes de prédiction à partir de données de référence et envoie des feedbacks à l’API.
+* **n_predictions**: number of future values to predict
+  For example:
+
+  * `1` → predict the next time step (next 30 minutes)
+  * `48` → predict the next full day
+
+You can send:
+
+* one day of data (like above)
+* multiple days (multiple lists inside `features`)
