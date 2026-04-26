@@ -100,88 +100,10 @@ uv run kedro run --pipeline=hello_mlflow
 
 ### Run the Docker services
 
-First, create a Docker network named `edf-forecasting`.
+Start all services with Docker Compose:
 
 ```bash
-docker network create edf-forecasting
-```
-
-#### Start MinIO
-
-```bash
-docker run -d \
-  --name minio \
-  --network edf-forecasting \
-  -p 9000:9000 \
-  -p 9001:9001 \
-  --env-file .env \
-  -v minio-data:/data \
-  minio/minio server /data --console-address ":9001"
-```
-
-#### Build MLflow image
-
-```bash
-docker build -t edf-forecasting-mlflow -f app/mlflow/Dockerfile .
-```
-
-#### Start MLflow container
-
-```bash
-docker run -d \
-  --name mlflow-server \
-  --network edf-forecasting \
-  -p 5000:5000 \
-  --env-file .env \
-  -v $(pwd)/mlflow-server/mlflow-data:/mlflow/data \
-  edf-forecasting-mlflow
-```
-
-#### Build API image
-
-```bash
-docker build -t edf-forecasting-api -f app/api/Dockerfile .
-```
-
-#### Build monitoring image
-
-```bash
-docker build -t edf-forecasting-monitoring -f app/monitoring/Dockerfile .
-```
-
-### Start monitoring container
-
-```bash
-docker run -d \
-  --name edf-forecasting-monitoring \
-  --network edf-forecasting \
-  --env-file .env \
-  -v $(pwd)/data/03_primary/eco2mix:/app/data/03_primary/eco2mix \
-  -v $(pwd)/src/logs:/app/src/logs \
-  -v $(pwd)/src/reports/db:/app/src/reports/db \
-  edf-forecasting-monitoring
-```
-
-### Start Prometheus
-
-```bash
-docker run -d \
-  --name prometheus \
-  --network edf-forecasting \
-  -p 9090:9090 \
-  -v $(pwd)/app/prometheus/prometheus.yml:/etc/prometheus/prometheus.yml \
-  -v prometheus-data:/prometheus \
-  prom/prometheus
-```
-
-### Start Grafana
-
-```bash
-docker run -d \
-  --name grafana \
-  --network edf-forecasting \
-  -p 3000:3000 \
-  grafana/grafana
+docker compose up --build -d
 ```
 
 ### MLflow / Kedro note
@@ -228,20 +150,6 @@ Open MLflow UI:
 * Select `timeseries_xgboost_30min`
 * Open the latest version
 * Set stage to **Production**
-
-## **Start the API container**
-
-Once the model is in Production, start the API:
-
-```bash
-docker run -d \
-  --name edf-forecasting-api \
-  --network edf-forecasting \
-  -p 8000:8000 \
-  --env-file .env \
-  -v $(pwd)/src/logs:/app/src/logs \
-  edf-forecasting-api
-```
 
 ## **Test the API**
 

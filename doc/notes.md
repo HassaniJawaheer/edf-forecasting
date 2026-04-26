@@ -267,3 +267,34 @@ docker run -d --name grafana --network edf-forecasting -p 3000:3000 grafana/graf
 ```bash
 docker run -d --name edf-forecasting-monitoring --network edf-forecasting --env-file .env -v $(pwd)/data/03_primary/eco2mix:/app/data/03_primary/eco2mix -v $(pwd)/src/logs:/app/src/logs -v $(pwd)/src/reports/db:/app/src/reports/db edf-forecasting-monitoring
 ```
+
+## Docker Compose – basic commands
+
+Start all services (build images if needed):
+```bash
+docker compose up --build -d
+````
+
+Stop and remove all services + volumes:
+
+```bash
+docker compose down -v --remove-orphans
+```
+
+View logs (all services):
+
+```bash
+docker compose logs -f
+```
+
+View logs for a specific service:
+
+```bash
+docker compose logs -f <service_name>
+```
+
+Check running services:
+
+```bash
+docker compose ps
+```

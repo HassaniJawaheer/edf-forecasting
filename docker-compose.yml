@@ -1,0 +1,110 @@
+services:
+  # Storage for MLflow artifacts
+  minio:
+    image: minio/minio
+    container_name: minio
+    env_file:
+      - .env
+    ports:
+      - "9000:9000" # API
+      - "9001:9001" # web UI
+    volumes:
+      - minio-data:/data
+    command: server /data --console-address ":9001"
+
+  # MinIO bucket
+  minio-init:
+    image: minio/mc
+    container_name: minio-init
+    env_file:
+      - .env
+    depends_on:
+      - minio
+    entrypoint: >
+      /bin/sh -c "
+      sleep 5;
+      mc alias set local http://minio:9000 $$MINIO_ROOT_USER $$MINIO_ROOT_PASSWORD;
+      mc mb -p local/edf-forecasting-artifacts || true;
+      exit 0;
+      "
+
+  # MLflow tracking server + model registry
+  mlflow-server:
+    build:
+      context: .
+      dockerfile: app/mlflow/Dockerfile
+    image: edf-forecasting-mlflow
+    container_name: mlflow-server
+    env_file:
+      - .env
+    ports:
+      - "5000:5000"
+    volumes:
+      - ./mlflow-server/mlflow-data:/mlflow/data
+    depends_on:
+      - minio-init
+
+  # Model inference service
+  edf-forecasting-api:
+    build:
+      context: .
+      dockerfile: app/api/Dockerfile
+    image: edf-forecasting-api
+    container_name: edf-forecasting-api
+    env_file:
+      - .env
+    ports:
+      - "8000:8000"
+    volumes:
+      - ./src/logs:/app/src/logs
+    depends_on:
+      - mlflow-server
+
+  # Model monitoring service
+  edf-forecasting-monitoring:
+    build:
+      context: .
+      dockerfile: app/monitoring/Dockerfile
+    image: edf-forecasting-monitoring
+    container_name: edf-forecasting-monitoring
+    env_file:
+      - .env
+    volumes:
+      - ./data/03_primary/eco2mix:/app/data/03_primary/eco2mix
+      - ./src/logs:/app/src/logs
+      - ./src/reports/db:/app/src/reports/db
+    depends_on:
+      - edf-forecasting-api
+
+  # Prometheus scrapes API metrics
+  prometheus:
+    image: prom/prometheus
+    container_name: prometheus
+    ports:
+      - "9090:9090"
+    volumes:
+      - ./app/prometheus/prometheus.yml:/etc/prometheus/prometheus.yml
+      - prometheus-data:/prometheus
+    depends_on:
+      - edf-forecasting-api
+
+  # Grafana visualizes Prometheus metrics
+  grafana:
+    image: grafana/grafana
+    container_name: grafana
+    ports:
+      - "3000:3000"
+    volumes:
+      - grafana-data:/var/lib/grafana
+    depends_on:
+      - prometheus
+
+volumes:
+  minio-data:
+  prometheus-data:
+  grafana-data:
+
+networks:
+  default:
+    name: edf-forecasting
+    external: true
