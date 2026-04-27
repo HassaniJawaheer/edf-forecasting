@@ -21,7 +21,7 @@ PREDICTION_LOG = os.path.join(LOG_DIR, "predictions.jsonl")
 FEEDBACK_LOG = os.path.join(LOG_DIR, "ground_truth.jsonl")
 
 DRIFT_CRITICAL_THRESHOLD = float(os.getenv("DRIFT_CRITICAL_THRESHOLD", "0.5"))
-RMSE_WARNING_THRESHOLD = float(os.getenv("RMSE_WARNING_THRESHOLD", "1000"))
+RMSE_WARNING_THRESHOLD = float(os.getenv("RMSE_WARNING_THRESHOLD", "500"))
 
 
 def get_latest_versioned_file(base_path: str) -> str:

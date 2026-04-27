@@ -8,7 +8,7 @@
 This project aims to build an Electricity Consumption Forecasting API using EDF (Electricité de France) data.
 
 ## **Architecture**
-The system is composed of several Dockerized services, each with a specific role. A **FastAPI-based** inference API serves predictions and logs both prediction data and user feedback. Model performance and system metrics are monitored using **Prometheus** and **Grafana**, while model performance and data drift are tracked using **Evidently AI**, executed periodically with a scheduler. Model training is handled by an offline training pipeline (with **Kedro**) running outside of Docker. **MLflow** is used for experiment tracking and model registry, and the API automatically loads the latest production model from MLflow. All artifacts, including trained models, are stored in **MinIO**.
+The system is composed of several Dockerized services, each with a specific role. A **FastAPI-based** inference API serves predictions and logs both prediction data and user feedback. Model performance and system metrics are monitored using **Prometheus** and **Grafana**, while model performance and data drift are tracked using **Evidently AI**, executed periodically with a scheduler. Model training is handled by an offline training pipeline (with **Kedro**) running outside of Docker. **MLflow** is used for experiment tracking and model registry, and the API automatically loads the latest production model from MLflow. All artifacts, including trained models, are stored in **MinIO**. A Kubernetes CronJob is used to periodically check model performance and trigger alerts when the model performance degrades.
 
 ## **Installation**
 
@@ -19,6 +19,7 @@ Tested with:
 * **Git 2.39.5**
 * **uv 0.6.12**
 * **Docker 28.2.1**
+* **Kubernetes (kubectl) 1.35.0**
 
 ### Docker installation
 
@@ -76,7 +77,7 @@ uv --version
 
 > [https://docs.astral.sh/uv/getting-started/installation/](https://docs.astral.sh/uv/getting-started/installation/)
 
-### **Copy the projet**
+### **Copy the project**
 
 Clone the Git repository :
 
@@ -188,3 +189,21 @@ You can send:
 
 * one day of data (like above)
 * multiple days (multiple lists inside `features`)
+
+
+## **Model alerting**
+
+### Run the alert system
+
+```bash
+kubectl apply -f app/k8s/cronjob-alert.yaml
+kubectl get cronjobs
+kubectl get jobs
+```
+
+### Check logs
+
+```bash
+kubectl get pods
+kubectl logs <pod_name>
+```

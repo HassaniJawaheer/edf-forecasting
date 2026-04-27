@@ -1,0 +1,35 @@
+apiVersion: batch/v1
+kind: CronJob
+metadata:
+  name: model-alert-checker
+spec:
+  schedule: "*/5 * * * *"
+  jobTemplate:
+    spec:
+      template:
+        spec:
+          restartPolicy: OnFailure
+          containers:
+            - name: model-alert-checker
+              image: python:3.11-slim
+              command: ["python", "/app/check_metrics.py"]
+              env:
+                - name: METRICS_DB
+                  value: "/app/db/metrics.db"
+                - name: ALERTS_DB
+                  value: "/app/db/alerts.db"
+              volumeMounts:
+                - name: db-volume
+                  mountPath: /app/db
+                - name: script-volume
+                  mountPath: /app/check_metrics.py
+                  subPath: check_metrics.py
+          volumes:
+            - name: db-volume
+              hostPath:
+                path: /home/hassani/projet_perso/edf-forecasting/src/reports/db
+                type: Directory
+            - name: script-volume
+              hostPath:
+                path: /home/hassani/projet_perso/edf-forecasting/src/monitoring
+                type: Directory
