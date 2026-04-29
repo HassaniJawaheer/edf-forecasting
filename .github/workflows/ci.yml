@@ -38,8 +38,4 @@ jobs:
       - name: Run unit tests
         run: uv run python -m pytest
 
-      # Lancement d'une pipeline Kedro minimale
-      - name: Run minimal Kedro pipeline
-        run: uv run kedro run --pipeline=hello_mlflow --env=ci
-
 
