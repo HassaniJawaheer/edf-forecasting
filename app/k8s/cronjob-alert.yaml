@@ -27,9 +27,9 @@ spec:
           volumes:
             - name: db-volume
               hostPath:
-                path: /home/hassani/projet_perso/edf-forecasting/src/reports/db
+                path: /workspace/edf-forecasting/src/reports/db
                 type: Directory
             - name: script-volume
               hostPath:
-                path: /home/hassani/projet_perso/edf-forecasting/src/monitoring
+                path: /workspace/edf-forecasting/src/monitoring
                 type: Directory

@@ -193,6 +193,31 @@ You can send:
 
 ## **Model alerting**
 
+### Kubernetes local cluster
+
+For the Kubernetes CronJob, the project folder must be mounted inside the local kind cluster.
+
+Create a `kind-mlops-config.yaml` file at the project root:
+
+```yaml
+kind: Cluster
+apiVersion: kind.x-k8s.io/v1alpha4
+name: mlops-local
+nodes:
+  - role: control-plane
+    extraMounts:
+      - hostPath: /absolute/path/to/edf-forecasting
+        containerPath: /workspace/edf-forecasting
+```
+
+Replace `/absolute/path/to/edf-forecasting` with your local project path.
+
+Create the cluster:
+
+```bash
+kind create cluster --config kind-mlops-config.yaml
+```
+
 ### Run the alert system
 
 ```bash

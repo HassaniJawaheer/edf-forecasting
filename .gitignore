@@ -171,3 +171,6 @@ mlartifacts/*
 
 # .db
 *.db
+
+# cronjob config
+kind-mlops-config.yaml
