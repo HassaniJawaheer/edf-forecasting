@@ -1,0 +1,17 @@
+backtest_model:
+  type: pickle.PickleDataset
+  filepath: ${globals:backtest_files.model_path}
+backtest_history:
+  type: pandas.CSVDataset
+  filepath: ${globals:backtest_files.history_path}
+  load_args:
+    index_col: 0
+    parse_dates: true
+    low_memory: false
+backtest_evaluation:
+  type: pandas.CSVDataset
+  filepath: ${globals:backtest_files.evaluation_path}
+  load_args:
+    index_col: 0
+    parse_dates: true
+    low_memory: false

@@ -1,0 +1,38 @@
+{
+  "run_id": "91315a0c8fe84d86aff5a76ad1538ac8",
+  "parameters": {
+    "year": 2021,
+    "window": 48,
+    "horizons": [
+      48,
+      336
+    ],
+    "origin_hour": 0,
+    "max_origins": null,
+    "n_jobs": 1,
+    "target": "Consommation",
+    "output_dir": "reports/backtest",
+    "model_path": "data/06_models/eco2mix/time_series/30min/xgboost/model.joblib/2026-04-26T15.27.35.500Z/model.joblib",
+    "history_path": "data/03_primary/eco2mix/definitive/30min/checked/split/train_checked_consumption_data.csv/2026-04-26T15.27.35.500Z/train_checked_consumption_data.csv",
+    "evaluation_path": "data/03_primary/eco2mix/definitive/30min/checked/split/cal_checked_consumption_data.csv/2026-04-26T15.27.35.500Z/cal_checked_consumption_data.csv"
+  },
+  "python": "3.12.9",
+  "xgboost": "2.1.1",
+  "git_commit": "9ead71053ed1ccd26dfb1bb79b0a55e684344824",
+  "timestamp_convention": "Stored timestamps; origin is the first target; horizon 1 is the next sample after the last observed value",
+  "updated_observations": "Diagnostic using observations available after the initial origin",
+  "files": {
+    "model_path": {
+      "path": "data/06_models/eco2mix/time_series/30min/xgboost/model.joblib/2026-04-26T15.27.35.500Z/model.joblib",
+      "sha256": "f52957407c2113d1bcac5fb90c1fa9ab1ae988c9b2755c5fe1a33444ec1aa402"
+    },
+    "history_path": {
+      "path": "data/03_primary/eco2mix/definitive/30min/checked/split/train_checked_consumption_data.csv/2026-04-26T15.27.35.500Z/train_checked_consumption_data.csv",
+      "sha256": "8963522e8a632f79b306e3a50b574c7a378cf85d0e010ca45519b95bd201039b"
+    },
+    "evaluation_path": {
+      "path": "data/03_primary/eco2mix/definitive/30min/checked/split/cal_checked_consumption_data.csv/2026-04-26T15.27.35.500Z/cal_checked_consumption_data.csv",
+      "sha256": "24085146c0cb7c4595d08be6d3fcb70201b3ddc61284c5bb1b965fade62b9a04"
+    }
+  }
+}

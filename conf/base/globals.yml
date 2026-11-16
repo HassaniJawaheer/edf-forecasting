@@ -1,0 +1,4 @@
+backtest_files:
+  model_path: data/06_models/eco2mix/time_series/30min/xgboost/model.joblib/2026-04-26T15.27.35.500Z/model.joblib
+  history_path: data/03_primary/eco2mix/definitive/30min/checked/split/train_checked_consumption_data.csv/2026-04-26T15.27.35.500Z/train_checked_consumption_data.csv
+  evaluation_path: data/03_primary/eco2mix/definitive/30min/checked/split/cal_checked_consumption_data.csv/2026-04-26T15.27.35.500Z/cal_checked_consumption_data.csv
