@@ -1,0 +1,25 @@
+max_encoder_length: 48
+max_prediction_length: 48
+max_epochs: 2
+dropout: 0.25
+batch_size: 128
+learning_rate: 0.5
+hidden_size: 256
+attention_head_size: 8
+hidden_continuous_size: 64
+accelerator: "gpu"
+devices: 1
+log_every_n_steps: 1
+precision: "32-true"
+gradient_clip_val: 0.1
+output_size: 7
+loss: QuantileLoss
+seed: 42
+
+# Checkpointing & early stopping
+use_checkpoint: true
+use_early_stopping: true
+early_stopping_patience: 5
+early_stopping_monitor: "val_loss"
+early_stopping_mode: "min"
+

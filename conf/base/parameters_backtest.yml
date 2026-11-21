@@ -6,7 +6,7 @@ backtest:
   max_origins: null
   n_jobs: 1
   target: Consommation
-  output_dir: reports/backtest
+  output_dir: doc/rapports/backtest
   model_path: ${globals:backtest_files.model_path}
   history_path: ${globals:backtest_files.history_path}
   evaluation_path: ${globals:backtest_files.evaluation_path}
